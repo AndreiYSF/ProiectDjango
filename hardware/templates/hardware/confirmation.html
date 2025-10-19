@@ -1,0 +1,11 @@
+{% extends "hardware/baza.html" %}
+
+{% block title %}Mesaj trimis{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>Mulțumim, {{ name }}!</h1>
+    <p>Mesajul tău a fost trimis cu succes. Îți vom răspunde în cel mai scurt timp.</p>
+    <a class="btn-primary" href="{% url 'hardware:home' %}">Înapoi la pagina principală</a>
+</section>
+{% endblock %}

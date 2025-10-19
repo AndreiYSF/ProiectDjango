@@ -25,13 +25,14 @@ SECRET_KEY = 'django-insecure-*hx38fn!24wl+$vl)21x0u)-^wv2zteu2jalu_xehdhf9m7#3_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
     "hardware",
+    "core",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'hardware.middleware.RequestLoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'ProiectDjango.urls'
@@ -110,6 +112,8 @@ TIME_ZONE = 'Europe/Bucharest'
 USE_I18N = True
 
 USE_TZ = True
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
 # Static files (CSS, JavaScript, Images)

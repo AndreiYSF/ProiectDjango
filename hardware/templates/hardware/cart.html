@@ -1,0 +1,59 @@
+{% extends "hardware/baza.html" %}
+
+{% block title %}Coșul meu{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>Coșul de cumpărături</h1>
+    <p>Verifică produsele selectate înainte de a finaliza comanda.</p>
+</section>
+
+{% if items %}
+<section class="cart-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Produs</th>
+                <th>Preț unitar</th>
+                <th>Cantitate</th>
+                <th>Total linie</th>
+                <th>Acțiuni</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td><a href="{% url 'hardware:product_detail' item.slug %}">{{ item.name }}</a></td>
+                <td>{{ item.price }} lei</td>
+                <td>
+                    <form method="post" action="{% url 'hardware:cart_update' item.slug %}" class="cart-inline-form">
+                        {% csrf_token %}
+                        <input type="number" name="qty" value="{{ item.qty }}" min="1" max="999">
+                        <button type="submit" class="btn-secondary">Actualizează</button>
+                    </form>
+                </td>
+                <td>{{ item.subtotal }} lei</td>
+                <td>
+                    <form method="post" action="{% url 'hardware:cart_remove' item.slug %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-danger">Elimină</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section class="cart-summary">
+    <h2>Total</h2>
+    <p class="cart-total">{{ total }} lei</p>
+    <div class="cart-actions">
+        <a class="btn-secondary" href="{% url 'hardware:catalog' %}">Continuă cumpărăturile</a>
+        <button class="btn-primary" type="button" disabled>Finalizează (în curând)</button>
+    </div>
+</section>
+{% else %}
+<p>Coșul tău este gol momentam. <a href="{% url 'hardware:catalog' %}">Adaugă produse</a> pentru a începe.</p>
+{% endif %}
+{% endblock %}

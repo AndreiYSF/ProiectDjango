@@ -178,6 +178,218 @@ body {
     color: #ffffff;
 }
 
+.filter-section,
+.cart-table,
+.cart-summary,
+.contact-form-section,
+.product-detail,
+.tutorial-detail,
+.related-tutorials {
+    background-color: #ffffff;
+    padding: 1.75rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+}
+
+.filter-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.filter-grid label {
+    display: grid;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.filter-grid input,
+.filter-grid select,
+.form-field input,
+.form-field textarea,
+.add-to-cart-form input,
+.cart-inline-form input {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #cbd5f5;
+    font-size: 1rem;
+}
+
+.filter-actions,
+.cart-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 1.25rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: #ffffff;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--primary-light);
+}
+
+.btn-secondary {
+    background-color: rgba(30, 58, 138, 0.1);
+    color: var(--primary);
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+    background-color: rgba(30, 58, 138, 0.2);
+}
+
+.btn-danger {
+    background-color: #dc2626;
+    color: #ffffff;
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+    background-color: #b91c1c;
+}
+
+.catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+
+.product-card {
+    background-color: #ffffff;
+    padding: 1.75rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+    display: grid;
+    gap: 0.75rem;
+}
+
+.product-card h2 a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.product-meta {
+    color: #4b5563;
+    font-size: 0.9rem;
+}
+
+.product-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.product-detail {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.product-accessories ul,
+.tutorial-products ul,
+.related-tutorials ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.add-to-cart-form,
+.cart-inline-form {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.cart-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.cart-table th,
+.cart-table td {
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem;
+    text-align: left;
+}
+
+.cart-total {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.form-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.form-field {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.field-errors {
+    list-style: disc;
+    padding-left: 1.25rem;
+    color: #dc2626;
+    font-size: 0.9rem;
+}
+
+.pagination {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.pagination a:hover,
+.pagination a:focus {
+    text-decoration: underline;
+}
+
 .site-footer {
     background-color: #0f172a;
     color: #e2e8f0;

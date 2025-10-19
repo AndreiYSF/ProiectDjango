@@ -1,0 +1,35 @@
+{% extends "hardware/baza.html" %}
+
+{% block title %}{{ tutorial.title }} - Tutorial{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>{{ tutorial.title }}</h1>
+    <p>Durată: {{ tutorial.duration_minutes }} minute · Dificultate: {{ tutorial.difficulty }}</p>
+    <p>Publicat la: {{ tutorial.published_at|date:"d MMMM Y" }}</p>
+</section>
+
+<section class="tutorial-detail">
+    <div class="tutorial-video">
+        <a class="btn-primary" href="{{ tutorial.video_url }}" target="_blank" rel="noopener">
+            Vezi tutorialul video
+        </a>
+    </div>
+    <div class="tutorial-description">
+        <p>{{ tutorial.description }}</p>
+    </div>
+
+    {% if tutorial.products.all %}
+    <div class="tutorial-products">
+        <h2>Produse menționate</h2>
+        <ul>
+            {% for product in tutorial.products.all %}
+            <li><a href="{% url 'hardware:product_detail' product.slug %}">{{ product.name }}</a></li>
+            {% empty %}
+            <li>Nu există produse asociate.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

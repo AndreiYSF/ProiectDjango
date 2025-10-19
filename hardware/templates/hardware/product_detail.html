@@ -1,0 +1,67 @@
+{% extends "hardware/baza.html" %}
+
+{% block title %}{{ product.name }} - Detalii produs{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>{{ product.name }}</h1>
+    <p>{{ product.category.name }} · {{ product.brand.name }} · {{ product.get_condition_display }}</p>
+</section>
+
+<section class="product-detail">
+    <div class="product-info">
+        <p class="product-price">Preț: <strong>{{ product.price }} lei</strong></p>
+        <p>Disponibilitate: <strong>{% if product.available %}În stoc{% else %}Stoc epuizat{% endif %}</strong></p>
+        <p>Stoc curent: {{ product.stock }} buc.</p>
+        <p class="product-description">{{ product.description|default:"Acest produs nu are încă o descriere detaliată." }}</p>
+
+        {% if product.materials.all %}
+        <div class="product-materials">
+            <h2>Materiale utilizate</h2>
+            <ul>
+                {% for material in product.materials.all %}
+                <li>{{ material.name }}{% if material.recyclable %} (reciclabil){% endif %}</li>
+                {% empty %}
+                <li>Nu sunt specificate materiale.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'hardware:cart_add' product.slug %}" class="add-to-cart-form">
+            {% csrf_token %}
+            <label for="qty">Cantitate</label>
+            <input type="number" name="qty" id="qty" value="1" min="1" max="999">
+            <button type="submit" class="btn-primary">Adaugă în coș</button>
+        </form>
+    </div>
+
+    {% if accessories %}
+    <aside class="product-accessories">
+        <h2>Accesorii compatibile</h2>
+        <ul>
+            {% for accessory in accessories %}
+            <li>
+                <strong>{{ accessory.name }}</strong>
+                {% if accessory.price %}- {{ accessory.price }} lei{% endif %}
+                {% if accessory.compatibility_notes %}
+                <p>{{ accessory.compatibility_notes }}</p>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </aside>
+    {% endif %}
+</section>
+
+{% if related_tutorials %}
+<section class="related-tutorials">
+    <h2>Tutoriale asociate</h2>
+    <ul>
+        {% for tutorial in related_tutorials %}
+        <li><a href="{% url 'hardware:tutorial_detail' tutorial.slug %}">{{ tutorial.title }}</a> · {{ tutorial.duration_minutes }} minute</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+{% endblock %}

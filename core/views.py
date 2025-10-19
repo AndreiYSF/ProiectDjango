@@ -1,10 +1,8 @@
-from django.http import HttpResponse
 from django.shortcuts import render
 
-def home(request):
-    return HttpResponse(
-        """
-        <h1>Welcome to my Django app!</h1>
-        <p>This is the home page, powered by Django.</p>
-        """
-    )
+from .models import Post
+
+
+def blog_home(request):
+    posts = Post.objects.order_by("-created_at")
+    return render(request, "core/post_list.html", {"posts": posts})

@@ -1,0 +1,36 @@
+{% extends "hardware/baza.html" %}
+
+{% block title %}Tutoriale video{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>Tutoriale video</h1>
+    <p>Învață să folosești corect sculele și accesoriile magazinului nostru.</p>
+</section>
+
+<section class="catalog-grid">
+    {% for tutorial in tutorials %}
+    <article class="product-card">
+        <h2><a href="{% url 'hardware:tutorial_detail' tutorial.slug %}">{{ tutorial.title }}</a></h2>
+        <p class="product-meta">
+            Durată: {{ tutorial.duration_minutes }} minute · Dificultate: {{ tutorial.difficulty }}
+        </p>
+        <p>{{ tutorial.description|truncatewords:30 }}</p>
+    </article>
+    {% empty %}
+    <p>Nu există tutoriale publicate în acest moment.</p>
+    {% endfor %}
+</section>
+
+{% if is_paginated %}
+<nav class="pagination">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}">« Anterior</a>
+    {% endif %}
+    <span>Pagina {{ page_obj.number }} din {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}">Următoare »</a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endblock %}

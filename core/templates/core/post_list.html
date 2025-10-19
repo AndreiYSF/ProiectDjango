@@ -1,0 +1,22 @@
+{% extends "hardware/baza.html" %}
+
+{% block title %}Blog - Noutăți din proiect{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>Blog (experimental)</h1>
+    <p>Articole publicate în scop demonstrativ pentru aplicația de laborator.</p>
+</section>
+
+<section class="catalog-grid">
+    {% for post in posts %}
+    <article class="product-card">
+        <h2>{{ post.title }}</h2>
+        <p class="product-meta">Publicat la {{ post.created_at|date:"d MMMM Y" }}</p>
+        <p>{{ post.content }}</p>
+    </article>
+    {% empty %}
+    <p>Nu există articole publicate încă.</p>
+    {% endfor %}
+</section>
+{% endblock %}

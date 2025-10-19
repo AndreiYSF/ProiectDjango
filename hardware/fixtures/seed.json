@@ -1,0 +1,244 @@
+[
+  {
+    "model": "hardware.category",
+    "pk": 1,
+    "fields": {
+      "name": "Scule electrice",
+      "slug": "scule-electrice",
+      "description": "Scule electrice pentru lucru intens: bormașini, șurubelnițe, polizoare."
+    }
+  },
+  {
+    "model": "hardware.category",
+    "pk": 2,
+    "fields": {
+      "name": "Scule manuale",
+      "slug": "scule-manuale",
+      "description": "Unelte de bază pentru atelier: truse, clești, chei și accesorii manuale."
+    }
+  },
+  {
+    "model": "hardware.category",
+    "pk": 3,
+    "fields": {
+      "name": "Echipamente de protecție",
+      "slug": "echipamente-protectie",
+      "description": "Îmbrăcăminte și accesorii pentru siguranță în timpul lucrului."
+    }
+  },
+  {
+    "model": "hardware.brand",
+    "pk": 1,
+    "fields": {
+      "name": "Bosch",
+      "slug": "bosch",
+      "country": "Germania",
+      "founded_year": 1886
+    }
+  },
+  {
+    "model": "hardware.brand",
+    "pk": 2,
+    "fields": {
+      "name": "DeWalt",
+      "slug": "dewalt",
+      "country": "Statele Unite",
+      "founded_year": 1924
+    }
+  },
+  {
+    "model": "hardware.brand",
+    "pk": 3,
+    "fields": {
+      "name": "Makita",
+      "slug": "makita",
+      "country": "Japonia",
+      "founded_year": 1915
+    }
+  },
+  {
+    "model": "hardware.material",
+    "pk": 1,
+    "fields": {
+      "name": "Oțel carbon",
+      "description": "Alloy rezistent folosit la scule profesionale.",
+      "recyclable": true
+    }
+  },
+  {
+    "model": "hardware.material",
+    "pk": 2,
+    "fields": {
+      "name": "Plastic ABS",
+      "description": "Plastic rezistent la impact folosit pentru carcase.",
+      "recyclable": false
+    }
+  },
+  {
+    "model": "hardware.material",
+    "pk": 3,
+    "fields": {
+      "name": "Aluminiu",
+      "description": "Material ușor, ideal pentru accesorii portabile.",
+      "recyclable": true
+    }
+  },
+  {
+    "model": "hardware.product",
+    "pk": 1,
+    "fields": {
+      "category": 1,
+      "brand": 1,
+      "name": "Bormașină cu percuție Bosch GSB 13 RE",
+      "slug": "bormasina-percutie-bosch-gsb-13-re",
+      "description": "Bormașină compactă cu percuție, 600 W, ideală pentru utilizare zilnică.",
+      "price": "439.90",
+      "stock": 24,
+      "available": true,
+      "condition": "nou",
+      "added_at": "2024-01-10T10:00:00Z",
+      "updated_at": "2024-01-10T10:00:00Z",
+      "materials": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "model": "hardware.product",
+    "pk": 2,
+    "fields": {
+      "category": 1,
+      "brand": 2,
+      "name": "Șurubelniță electrică DeWalt DCF601",
+      "slug": "surubelnita-electrica-dewalt-dcf601",
+      "description": "Șurubelniță cu acumulator, 12V XR, ideală pentru montaj rapid.",
+      "price": "629.00",
+      "stock": 15,
+      "available": true,
+      "condition": "nou",
+      "added_at": "2024-01-12T11:30:00Z",
+      "updated_at": "2024-01-12T11:30:00Z",
+      "materials": [
+        2
+      ]
+    }
+  },
+  {
+    "model": "hardware.product",
+    "pk": 3,
+    "fields": {
+      "category": 2,
+      "brand": 3,
+      "name": "Trusă scule 108 piese Makita",
+      "slug": "trusa-scule-108-piese-makita",
+      "description": "Trusă completă pentru atelier, conține chei tubulare, biți și adaptori.",
+      "price": "389.50",
+      "stock": 40,
+      "available": true,
+      "condition": "nou",
+      "added_at": "2024-01-14T09:15:00Z",
+      "updated_at": "2024-01-14T09:15:00Z",
+      "materials": [
+        1
+      ]
+    }
+  },
+  {
+    "model": "hardware.product",
+    "pk": 4,
+    "fields": {
+      "category": 1,
+      "brand": 1,
+      "name": "Polizor unghiular Bosch GWS 750",
+      "slug": "polizor-unghiular-bosch-gws-750",
+      "description": "Polizor unghiular 750 W, disc 115 mm, pentru lucru intens.",
+      "price": "349.00",
+      "stock": 10,
+      "available": true,
+      "condition": "resigilat",
+      "added_at": "2024-01-16T08:45:00Z",
+      "updated_at": "2024-01-16T08:45:00Z",
+      "materials": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "model": "hardware.product",
+    "pk": 5,
+    "fields": {
+      "category": 3,
+      "brand": 3,
+      "name": "Căști antifonice Makita Padded",
+      "slug": "casti-antifonice-makita-padded",
+      "description": null,
+      "price": "119.90",
+      "stock": 35,
+      "available": true,
+      "condition": "second_hand",
+      "added_at": "2024-01-20T14:20:00Z",
+      "updated_at": "2024-01-20T14:20:00Z",
+      "materials": [
+        2,
+        3
+      ]
+    }
+  },
+  {
+    "model": "hardware.accessory",
+    "pk": 1,
+    "fields": {
+      "product": 1,
+      "name": "Set burghie beton Bosch 5 piese",
+      "compatibility_notes": "Compatibil cu mandrina de 13 mm.",
+      "price": "59.90",
+      "requires_professional_installation": false
+    }
+  },
+  {
+    "model": "hardware.accessory",
+    "pk": 2,
+    "fields": {
+      "product": 4,
+      "name": "Set discuri tăiere metal 125 mm",
+      "compatibility_notes": "Se recomandă respectarea vitezei maxime de rotație.",
+      "price": "49.50",
+      "requires_professional_installation": false
+    }
+  },
+  {
+    "model": "hardware.tutorial",
+    "pk": 1,
+    "fields": {
+      "title": "Cum folosești corect o bormașină cu percuție",
+      "slug": "ghid-bormasina-percutie",
+      "video_url": "https://www.example.com/video/bormasina-percutie",
+      "description": "Tehnici de găurire în zidărie și beton pentru rezultate profesionale.",
+      "duration_minutes": 18,
+      "difficulty": "Intermediar",
+      "published_at": "2024-03-21T08:00:00Z",
+      "products": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "model": "hardware.tutorial",
+    "pk": 2,
+    "fields": {
+      "title": "Sfaturi de siguranță pentru polizorul unghiular",
+      "slug": "sfaturi-polizor-unghiular",
+      "video_url": "https://www.example.com/video/polizor-unghiular",
+      "description": "Protecție, discuri potrivite și tehnici pentru tăieturi curate.",
+      "duration_minutes": 12,
+      "difficulty": "Începător",
+      "published_at": "2024-02-10T07:30:00Z",
+      "products": [
+        4
+      ]
+    }
+  }
+]

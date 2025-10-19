@@ -5,17 +5,31 @@ from . import views
 app_name = "hardware"
 
 urlpatterns = [
-    path("", views.home, name="home"),
-    path("despre/", views.despre, name="despre"),
+    path("", views.HomeView.as_view(), name="home"),
+    path("despre/", views.AboutView.as_view(), name="despre"),
     path("info/", views.info, name="info"),
-    path("log/", views.log, name="log"),
-    path("produse/", views.in_lucru, {"page_title": "Produse"}, name="produse"),
-    path("contact/", views.in_lucru, {"page_title": "Contact"}, name="contact"),
-    path("cos/", views.in_lucru, {"page_title": "Coș virtual"}, name="cos"),
+    path("log/", views.LogListView.as_view(), name="log"),
+    path("catalog/", views.CatalogListView.as_view(), name="catalog"),
     path(
-        "tutoriale/",
-        views.in_lucru,
-        {"page_title": "Tutoriale video"},
-        name="tutoriale",
+        "catalog/categorie/<slug:category_slug>/",
+        views.CatalogListView.as_view(),
+        name="catalog_by_category",
+    ),
+    path(
+        "catalog/brand/<slug:brand_slug>/",
+        views.CatalogListView.as_view(),
+        name="catalog_by_brand",
+    ),
+    path("produs/<slug:slug>/", views.ProductDetailView.as_view(), name="product_detail"),
+    path("cart/", views.cart_detail, name="cart"),
+    path("cart/add/<slug:slug>/", views.cart_add, name="cart_add"),
+    path("cart/update/<slug:slug>/", views.cart_update, name="cart_update"),
+    path("cart/remove/<slug:slug>/", views.cart_remove, name="cart_remove"),
+    path("contact/", views.ContactView.as_view(), name="contact"),
+    path("tutoriale/", views.TutorialsListView.as_view(), name="tutoriale"),
+    path(
+        "tutoriale/<slug:slug>/",
+        views.TutorialDetailView.as_view(),
+        name="tutorial_detail",
     ),
 ]

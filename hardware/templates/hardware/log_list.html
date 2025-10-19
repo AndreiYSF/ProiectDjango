@@ -1,0 +1,100 @@
+{% extends "hardware/baza.html" %}
+
+{% block title %}Jurnal accesări{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>Jurnal accesări</h1>
+    <p>Monitorizează ultimele accesări ale aplicației. Filtrează după metodă HTTP, IP, cale sau interval de timp.</p>
+</section>
+
+<section class="filter-section">
+    <form method="get" class="filter-form">
+        <div class="filter-grid">
+            <label>
+                Metodă
+                <select name="method">
+                    <option value="">Toate</option>
+                    {% for method in methods %}
+                    <option value="{{ method }}" {% if params.method == method %}selected{% endif %}>
+                        {{ method }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                IP
+                <input type="text" name="ip" value="{{ params.ip }}">
+            </label>
+            <label>
+                Cale conține
+                <input type="text" name="path" value="{{ params.path }}">
+            </label>
+            <label>
+                De la (YYYY-MM-DD)
+                <input type="date" name="start" value="{{ params.start }}">
+            </label>
+            <label>
+                Până la (YYYY-MM-DD)
+                <input type="date" name="end" value="{{ params.end }}">
+            </label>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn-primary">Aplică filtre</button>
+            <a href="{% url 'hardware:log' %}" class="btn-secondary">Resetează</a>
+        </div>
+    </form>
+</section>
+
+{% if filter_errors %}
+<section class="messages errors">
+    <h2>Erori filtre</h2>
+    <ul>
+        {% for error in filter_errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+<section class="log-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Moment</th>
+                <th>Metodă</th>
+                <th>Cale</th>
+                <th>Query</th>
+                <th>IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
+                <td>{{ log.method }}</td>
+                <td>{{ log.path }}</td>
+                <td>{{ log.querystring|default:"-" }}</td>
+                <td>{{ log.ip|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">Nu există accesări înregistrate pentru filtrele curente.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+{% if is_paginated %}
+<nav class="pagination">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if params_encoded %}&{{ params_encoded }}{% endif %}">« Anterior</a>
+    {% endif %}
+    <span>Pagina {{ page_obj.number }} din {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if params_encoded %}&{{ params_encoded }}{% endif %}">Următoare »</a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endblock %}
