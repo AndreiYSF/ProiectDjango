@@ -1,0 +1,199 @@
+:root {
+    --primary: #1e3a8a;
+    --primary-light: #3b82f6;
+    --background: #f4f5f7;
+    --text: #1f2933;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background-color: var(--background);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+.site-header {
+    background-color: var(--primary);
+    color: #ffffff;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.logo-icon {
+    display: inline-flex;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.2);
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.main-nav ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.main-nav a {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.main-nav a:hover,
+.main-nav a:focus {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.site-main {
+    padding: 2rem clamp(1rem, 4vw, 3rem);
+    display: grid;
+    gap: 2rem;
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.1);
+}
+
+.hero h1 {
+    margin-bottom: 1rem;
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+}
+
+.hero p {
+    font-size: 1rem;
+}
+
+.hero-image img {
+    width: 100%;
+    max-width: 320px;
+    display: block;
+    margin: 0 auto;
+}
+
+.feature,
+.about-section,
+.page-heading,
+.messages,
+.log-table,
+.page-summary {
+    background-color: #ffffff;
+    padding: 1.75rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+}
+
+.feature h2,
+.about-section h2 {
+    margin-bottom: 0.75rem;
+    color: var(--primary);
+}
+
+.about-section ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.about-image {
+    margin-top: 1.5rem;
+    width: 100%;
+    max-width: 360px;
+}
+
+.data-list {
+    list-style: none;
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.data-list code {
+    background-color: #e2e8f0;
+    border-radius: 0.25rem;
+    padding: 0.1rem 0.4rem;
+}
+
+.messages ul,
+.log-list {
+    list-style: disc;
+    padding-left: 1.5rem;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.messages.errors {
+    border-left: 4px solid #dc2626;
+}
+
+.messages.infos {
+    border-left: 4px solid #2563eb;
+}
+
+.log-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.log-table th,
+.log-table td {
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem;
+    text-align: left;
+}
+
+.log-table th {
+    background-color: var(--primary);
+    color: #ffffff;
+}
+
+.site-footer {
+    background-color: #0f172a;
+    color: #e2e8f0;
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 720px) {
+    .main-nav ul {
+        justify-content: center;
+    }
+
+    .site-header {
+        justify-content: center;
+        gap: 1rem;
+        text-align: center;
+    }
+}

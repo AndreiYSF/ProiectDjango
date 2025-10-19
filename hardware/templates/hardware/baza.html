@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Magazin Hardware{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'hardware/css/site.css' %}">
+</head>
+<body>
+    <header class="site-header">
+        <div class="logo">
+            <span class="logo-icon">MH</span>
+            <span class="logo-text">Magazin Hardware</span>
+        </div>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="{% url 'hardware:home' %}">Pagina principală</a></li>
+                <li><a href="{% url 'hardware:despre' %}">Despre</a></li>
+                <li><a href="{% url 'hardware:produse' %}">Produse</a></li>
+                <li><a href="{% url 'hardware:contact' %}">Contact</a></li>
+                <li><a href="{% url 'hardware:cos' %}">Coș virtual</a></li>
+                <li><a href="{% url 'hardware:tutoriale' %}">Tutoriale video</a></li>
+                <li><a href="{% url 'hardware:info' %}">Info</a></li>
+                <li><a href="{% url 'hardware:log' %}">Log</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main class="site-main">
+        {% block content %}{% endblock %}
+    </main>
+    {% now "Y" as current_year %}
+    <footer class="site-footer">
+        <p>Adresă IP client: {{ request.META.REMOTE_ADDR|default:"necunoscut" }}</p>
+        <p>&copy; {{ current_year }} Magazin de hardware - proiect educațional.</p>
+    </footer>
+</body>
+</html>

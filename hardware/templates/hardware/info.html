@@ -1,0 +1,35 @@
+{% extends "hardware/baza.html" %}
+
+{% block title %}Informații despre server{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>{{ heading }}</h1>
+    <p>Momentul curent: <strong>{{ moment }}</strong></p>
+    {% if mesaj_param %}
+    <p class="info-message">{{ mesaj_param }}</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Date despre solicitare</h2>
+    <ul class="data-list">
+        {% for label, valoare in server_info %}
+        <li><strong>{{ label }}:</strong> {{ valoare }}</li>
+        {% endfor %}
+    </ul>
+</section>
+
+<section>
+    <h2>Parametri primiți</h2>
+    {% if parametri %}
+        <ul class="data-list">
+            {% for nume, valoare in parametri %}
+            <li><code>{{ nume }}</code> = {{ valoare }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nu au fost primiți parametri în query string.</p>
+    {% endif %}
+</section>
+{% endblock %}

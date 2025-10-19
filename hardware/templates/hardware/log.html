@@ -1,0 +1,120 @@
+{% extends "hardware/baza.html" %}
+
+{% block title %}Jurnal accesări{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>Jurnalul accesărilor</h1>
+    <p>Până acum au avut loc <strong>{{ total_accesari }}</strong> accesări.</p>
+</section>
+
+{% if errors %}
+<section class="messages errors">
+    <h2>Erori</h2>
+    <ul>
+        {% for eroare in errors %}
+        <li>{{ eroare }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if messages %}
+<section class="messages infos">
+    <h2>Informații</h2>
+    <ul>
+        {% for mesaj in messages %}
+        <li>{{ mesaj }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if ultimele_accesari %}
+<section>
+    <h2>Ultimele accesări</h2>
+    <ol>
+        {% for accesare in ultimele_accesari %}
+        <li>
+            <strong>#{{ accesare.id }}</strong> –
+            {{ accesare.pagina }} ({{ accesare.data }}), IP: {{ accesare.ip_client }}
+        </li>
+        {% endfor %}
+    </ol>
+</section>
+{% endif %}
+
+{% if accesari_detalii %}
+<section>
+    <h2>Detalii accesări</h2>
+    <ul>
+        {% for detaliu in accesari_detalii %}
+        <li>{{ detaliu }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if accesari_din_iduri %}
+<section>
+    <h2>Accesări selectate prin iduri {% if dubluri %}(cu duplicate){% endif %}</h2>
+    <ul>
+        {% for accesare in accesari_din_iduri %}
+        <li>
+            #{{ accesare.id }} – {{ accesare.url }} ({{ accesare.data }})
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if tabel_coloane %}
+<section class="log-table">
+    <h2>Tabel accesări</h2>
+    <table>
+        <thead>
+            <tr>
+                {% for col in tabel_coloane %}
+                <th>{{ col|title }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for linie in tabel_linii %}
+            <tr>
+                {% for valoare in linie %}
+                <td>{{ valoare }}</td>
+                {% endfor %}
+            </tr>
+            {% empty %}
+            <tr><td colspan="{{ tabel_coloane|length }}">Nu există accesări înregistrate.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+<section>
+    <h2>Toate accesările</h2>
+    <ul class="log-list">
+        {% for accesare in log %}
+        <li>
+            #{{ accesare.id }} – {{ accesare.method }} {{ accesare.url }} |
+            IP: {{ accesare.ip_client }} | Moment: {{ accesare.data }}
+        </li>
+        {% empty %}
+        <li>Nu sunt accesări înregistrate.</li>
+        {% endfor %}
+    </ul>
+</section>
+
+<section class="page-summary">
+    <h2>Statistică accesare pagini</h2>
+    {% if pagina_min %}
+    <p>Pagina cel mai puțin accesată: <strong>{{ pagina_min }}</strong></p>
+    <p>Pagina cel mai des accesată: <strong>{{ pagina_max }}</strong></p>
+    {% else %}
+    <p>Nu există suficiente date pentru statistici.</p>
+    {% endif %}
+</section>
+{% endblock %}

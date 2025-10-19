@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2025-01-01T00:00:00.000Z" agent="Codex CLI" version="22.0.8" editor="diagramly">
+  <diagram id="erd-diagram" name="ERD">
+    <mxGraphModel dx="960" dy="540" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1.2" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="cat" value="Category&#xa;- id (PK)&#xa;- name&#xa;- description" style="swimlane;childLayout=stackLayout;horizontal=1;rounded=0;shadow=0;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="60" y="80" width="200" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="brand" value="Brand&#xa;- id (PK)&#xa;- name&#xa;- country&#xa;- founded_year" style="swimlane;childLayout=stackLayout;horizontal=1;rounded=0;shadow=0;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="360" y="80" width="200" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="product" value="Product&#xa;- id (PK)&#xa;- name&#xa;- slug&#xa;- price&#xa;- stock&#xa;- available&#xa;- created_at&#xa;- updated_at&#xa;- category_id (FK)&#xa;- brand_id (FK)" style="swimlane;childLayout=stackLayout;horizontal=1;rounded=0;shadow=0;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="200" y="280" width="260" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="material" value="Material&#xa;- id (PK)&#xa;- name&#xa;- description&#xa;- recyclable" style="swimlane;childLayout=stackLayout;horizontal=1;rounded=0;shadow=0;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="40" y="560" width="220" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="accessory" value="Accessory&#xa;- id (PK)&#xa;- name&#xa;- compatibility_notes&#xa;- price&#xa;- requires_professional_installation&#xa;- product_id (FK)" style="swimlane;childLayout=stackLayout;horizontal=1;rounded=0;shadow=0;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="360" y="560" width="260" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="tutorial" value="Tutorial&#xa;- id (PK)&#xa;- title&#xa;- video_url&#xa;- duration_minutes&#xa;- difficulty&#xa;- published_at" style="swimlane;childLayout=stackLayout;horizontal=1;rounded=0;shadow=0;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="600" y="320" width="240" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="cat_product" value="1 .. N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontStyle=1" parent="1" source="cat" target="product" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="180" y="240" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="brand_product" value="1 .. N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontStyle=1" parent="1" source="brand" target="product" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="240" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="product_accessory" value="1 .. N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontStyle=1" parent="1" source="product" target="accessory" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="520" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="product_material" value="M .. N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontStyle=1" parent="1" source="product" target="material" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="200" y="520" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="product_tutorial" value="M .. N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontStyle=1" parent="1" source="product" target="tutorial" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="540" y="360" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

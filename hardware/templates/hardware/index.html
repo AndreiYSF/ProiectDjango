@@ -1,0 +1,26 @@
+{% extends "hardware/baza.html" %}
+{% load static %}
+
+{% block title %}Magazin Hardware - Pagina principală{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-text">
+        <h1>Magazin de hardware (scule &amp; unelte)</h1>
+        <p>
+            Magazin de hardware (scule &amp; unelte): produse bormașini, șurubelnițe electrice, accesorii construcții.
+            Include și o pagină cu tutoriale video.
+        </p>
+    </div>
+    <div class="hero-image">
+        <img src="{% static 'hardware/img/toolbox.svg' %}" alt="Set de scule">
+    </div>
+</section>
+
+{% for sectiune in sectiuni %}
+<section class="feature">
+    <h2>{{ sectiune.titlu }}</h2>
+    <p>{{ sectiune.descriere }}</p>
+</section>
+{% endfor %}
+{% endblock %}
