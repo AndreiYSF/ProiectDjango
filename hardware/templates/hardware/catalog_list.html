@@ -43,8 +43,7 @@
         </div>
         {% endif %}
         <div class="filter-grid{% if minimalist_category %} minimalist{% endif %}">
-            {% for field in filter_form.visible_fields %}
-            {% if not minimalist_category or field.name in minimalist_filter_fields %}
+            {% for field in minimal_fields %}
             <div class="form-field{% if field.field.widget.input_type == 'checkbox' %} checkbox-field{% endif %}">
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                 {{ field }}
@@ -59,7 +58,6 @@
                 </ul>
                 {% endif %}
             </div>
-            {% endif %}
             {% endfor %}
             {% if is_category_page and current_category %}
             <div class="form-field readonly-category">
@@ -68,6 +66,29 @@
             </div>
             {% endif %}
         </div>
+        {% if advanced_fields %}
+        <details class="advanced-filters">
+            <summary>Filtre avansate</summary>
+            <div class="filter-grid advanced">
+                {% for field in advanced_fields %}
+                <div class="form-field{% if field.field.widget.input_type == 'checkbox' %} checkbox-field{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                    <p class="field-help">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                    <ul class="field-errors">
+                        {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </details>
+        {% endif %}
         <div class="filter-actions">
             <button type="submit" class="btn-primary">Aplică filtre</button>
             <a href="{{ request.path }}" class="btn-secondary" id="reset-filters">Reset</a>

@@ -1,0 +1,10 @@
+{
+  "nume": "Popescu",
+  "prenume": "Ion",
+  "varsta": "35 ani și 9 luni",
+  "email": "utilizator@example.com",
+  "tip_mesaj": "intrebare",
+  "subiect": "Intrebare disponibilitate",
+  "minim_zile_asteptare": 3,
+  "mesaj": "Buna ziua, doresc informatii suplimentare despre stoc Popescu"
+}

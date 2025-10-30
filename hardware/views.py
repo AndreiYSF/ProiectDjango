@@ -145,7 +145,12 @@ class ProductsListView(ListView):
         self.per_page = self.form_class.DEFAULT_PER_PAGE
         self.sort_param = ""
         self.query_without_page = ""
-        self.use_minimalist_filters = False
+        self.use_minimalist_filters = True
+        self.allowed_advanced_fields = [
+            "brand",
+            "condition",
+            "materials",
+        ]
         super().setup(request, *args, **kwargs)
 
     def get_form(self) -> ProductFilterForm:
@@ -296,13 +301,30 @@ class ProductsListView(ListView):
             context["page_title"] = "Toate produsele"
             context["category_description"] = ""
         context["minimalist_category"] = self.use_minimalist_filters
-        context["minimalist_filter_fields"] = [
+        minimal_list = [
             "name",
             "price_min",
             "price_max",
             "available",
             "per_page",
         ] if self.use_minimalist_filters else []
+        context["minimalist_filter_fields"] = minimal_list
+        filter_form = context["filter_form"]
+        visible_fields = list(filter_form.visible_fields())
+        minimal_names = set(minimal_list)
+        if self.use_minimalist_filters:
+            context["minimal_fields"] = [
+                field for field in visible_fields if field.name in minimal_names
+            ]
+            context["advanced_fields"] = [
+                field
+                for field in visible_fields
+                if field.name not in minimal_names
+                and field.name in self.allowed_advanced_fields
+            ]
+        else:
+            context["minimal_fields"] = visible_fields
+            context["advanced_fields"] = []
         return context
 
 
