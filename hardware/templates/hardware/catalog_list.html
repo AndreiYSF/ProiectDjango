@@ -30,6 +30,9 @@
         {% for hidden in filter_form.hidden_fields %}
         {{ hidden }}
         {% endfor %}
+        {% if minimalist_category %}
+        <p class="minimalist-note">Filtrarea a fost simplificată pentru această categorie.</p>
+        {% endif %}
         {% if filter_form.non_field_errors %}
         <div class="messages errors">
             <ul>
@@ -39,12 +42,13 @@
             </ul>
         </div>
         {% endif %}
-        <div class="filter-grid">
+        <div class="filter-grid{% if minimalist_category %} minimalist{% endif %}">
             {% for field in filter_form.visible_fields %}
+            {% if not minimalist_category or field.name in minimalist_filter_fields %}
             <div class="form-field{% if field.field.widget.input_type == 'checkbox' %} checkbox-field{% endif %}">
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                 {{ field }}
-                {% if field.help_text %}
+                {% if field.help_text and not minimalist_category %}
                 <p class="field-help">{{ field.help_text }}</p>
                 {% endif %}
                 {% if field.errors %}
@@ -55,6 +59,7 @@
                 </ul>
                 {% endif %}
             </div>
+            {% endif %}
             {% endfor %}
             {% if is_category_page and current_category %}
             <div class="form-field readonly-category">

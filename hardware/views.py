@@ -131,6 +131,11 @@ class ProductsListView(ListView):
     context_object_name = "products"
     paginate_by = ProductFilterForm.DEFAULT_PER_PAGE
     form_class = ProductFilterForm
+    minimalist_slugs = {
+        "echipamente-protectie",
+        "scule-electrice",
+        "scule-manuale",
+    }
 
     def setup(self, request: HttpRequest, *args: Any, **kwargs: Any) -> None:
         self.current_category = None
@@ -140,6 +145,7 @@ class ProductsListView(ListView):
         self.per_page = self.form_class.DEFAULT_PER_PAGE
         self.sort_param = ""
         self.query_without_page = ""
+        self.use_minimalist_filters = False
         super().setup(request, *args, **kwargs)
 
     def get_form(self) -> ProductFilterForm:
@@ -289,6 +295,14 @@ class ProductsListView(ListView):
         else:
             context["page_title"] = "Toate produsele"
             context["category_description"] = ""
+        context["minimalist_category"] = self.use_minimalist_filters
+        context["minimalist_filter_fields"] = [
+            "name",
+            "price_min",
+            "price_max",
+            "available",
+            "per_page",
+        ] if self.use_minimalist_filters else []
         return context
 
 
@@ -300,6 +314,7 @@ class CategoryDetailView(ProductsListView):
             Category.objects.prefetch_related("products"), slug=slug
         )
         self.lock_category = True
+        self.use_minimalist_filters = slug in self.minimalist_slugs
 
 
 class BrandProductsView(ProductsListView):
