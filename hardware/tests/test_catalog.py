@@ -14,7 +14,7 @@ class CatalogViewTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertIn("products", response.context)
-        self.assertLessEqual(len(response.context["products"]), 12)
+        self.assertLessEqual(len(response.context["products"]), 10)
         self.assertFalse(response.context["is_paginated"])
 
         category = Category.objects.get(slug="scule-electrice")
@@ -63,16 +63,14 @@ class CatalogViewTests(TestCase):
             {
                 "category": "scule-electrice",
                 "brand": "bosch",
-                "sort": "price_desc",
+                "ord": "d",
             },
         )
         self.assertEqual(response.status_code, 200)
         products = list(response.context["products"])
         self.assertGreaterEqual(products[0].price, products[-1].price)
 
-        brand_url = reverse(
-            "hardware:catalog_by_brand", kwargs={"brand_slug": "dewalt"}
-        )
+        brand_url = reverse("hardware:catalog_by_brand", kwargs={"slug": "dewalt"})
         response = self.client.get(brand_url)
         self.assertEqual(response.status_code, 200)
         for product in response.context["products"]:

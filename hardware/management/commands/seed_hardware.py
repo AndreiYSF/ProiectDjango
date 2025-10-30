@@ -34,16 +34,22 @@ class Command(BaseCommand):
                 "slug": "scule-electrice",
                 "name": "Scule electrice",
                 "description": "Scule electrice pentru lucru intens: bormașini, șurubelnițe, polizoare.",
+                "icon_class": "fa-solid fa-bolt",
+                "color_hex": "#f97316",
             },
             {
                 "slug": "scule-manuale",
                 "name": "Scule manuale",
                 "description": "Unelte de bază pentru atelier: truse, clești, chei și accesorii manuale.",
+                "icon_class": "fa-solid fa-screwdriver-wrench",
+                "color_hex": "#2563eb",
             },
             {
                 "slug": "echipamente-protectie",
                 "name": "Echipamente de protecție",
                 "description": "Îmbrăcăminte și accesorii pentru siguranță în timpul lucrului.",
+                "icon_class": "fa-solid fa-helmet-safety",
+                "color_hex": "#16a34a",
             },
         ]
         categories: dict[str, Category] = {}
@@ -53,12 +59,18 @@ class Command(BaseCommand):
                 defaults={
                     "name": item["name"],
                     "description": item["description"],
+                    "icon_class": item["icon_class"],
+                    "color_hex": item["color_hex"],
                 },
             )
             if not created:
                 category.name = item["name"]
                 category.description = item["description"]
-                category.save(update_fields=["name", "description"])
+                category.icon_class = item["icon_class"]
+                category.color_hex = item["color_hex"]
+                category.save(
+                    update_fields=["name", "description", "icon_class", "color_hex"]
+                )
             categories[item["slug"]] = category
         return categories
 

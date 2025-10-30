@@ -1,109 +1,143 @@
 {% extends "hardware/baza.html" %}
+{% load querystring %}
 
-{% block title %}Catalog produse{% endblock %}
+{% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
 <section class="page-heading">
-    <h1>Catalog de produse</h1>
-    <p>Explorează sculele și accesoriile disponibile în magazinul nostru și filtrează după categorie, brand sau preț.</p>
+    <h1>{{ page_title }}</h1>
+    {% if is_category_page and current_category %}
+    <div class="category-highlight">
+        <a class="category-badge"
+           href="{% url 'hardware:category_detail' current_category.slug %}"
+           {% if current_category.color_hex %}style="background-color: {{ current_category.color_hex }};"{% endif %}>
+            {% if current_category.icon_class %}
+            <i class="{{ current_category.icon_class }}" aria-hidden="true"></i>
+            {% endif %}
+            {{ current_category.name }}
+        </a>
+        {% if category_description %}<p>{{ category_description }}</p>{% endif %}
+    </div>
+    {% elif current_brand %}
+    <p>Produse disponibile pentru brandul {{ current_brand.name }}.</p>
+    {% else %}
+    <p>Explorează toate produsele și ajustează filtrele pentru a găsi rapid ceea ce cauți.</p>
+    {% endif %}
 </section>
-
-{% if filter_errors %}
-<section class="messages errors">
-    <h2>Erori filtre</h2>
-    <ul>
-        {% for eroare in filter_errors %}
-        <li>{{ eroare }}</li>
-        {% endfor %}
-    </ul>
-</section>
-{% endif %}
 
 <section class="filter-section">
-    <form method="get" class="filter-form">
+    <form method="get" class="filter-form" id="product-filter-form">
+        {% for hidden in filter_form.hidden_fields %}
+        {{ hidden }}
+        {% endfor %}
+        {% if filter_form.non_field_errors %}
+        <div class="messages errors">
+            <ul>
+                {% for error in filter_form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
         <div class="filter-grid">
-            <label>
-                Categorie
-                <select name="category">
-                    <option value="">Toate</option>
-                    {% for category in categories %}
-                    <option value="{{ category.slug }}" {% if active_filters.category == category.slug or active_filters.category_slug == category.slug %}selected{% endif %}>
-                        {{ category.name }}
-                    </option>
+            {% for field in filter_form.visible_fields %}
+            <div class="form-field{% if field.field.widget.input_type == 'checkbox' %} checkbox-field{% endif %}">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                <p class="field-help">{{ field.help_text }}</p>
+                {% endif %}
+                {% if field.errors %}
+                <ul class="field-errors">
+                    {% for error in field.errors %}
+                    <li>{{ error }}</li>
                     {% endfor %}
-                </select>
-            </label>
-            <label>
-                Brand
-                <select name="brand">
-                    <option value="">Toate</option>
-                    {% for brand in brands %}
-                    <option value="{{ brand.slug }}" {% if active_filters.brand == brand.slug or active_filters.brand_slug == brand.slug %}selected{% endif %}>
-                        {{ brand.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </label>
-            <label>
-                Preț minim (lei)
-                <input type="number" step="0.01" name="min_price" value="{{ active_filters.min_price }}">
-            </label>
-            <label>
-                Preț maxim (lei)
-                <input type="number" step="0.01" name="max_price" value="{{ active_filters.max_price }}">
-            </label>
-            <label>
-                Sortare
-                <select name="sort">
-                    {% for value, label in sort_options %}
-                    <option value="{{ value }}" {% if sort_option == value %}selected{% endif %}>
-                        {{ label }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </label>
+                </ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% if is_category_page and current_category %}
+            <div class="form-field readonly-category">
+                <label>Categorie selectată</label>
+                <div class="readonly-value">{{ current_category.name }}</div>
+            </div>
+            {% endif %}
         </div>
         <div class="filter-actions">
             <button type="submit" class="btn-primary">Aplică filtre</button>
-            <a href="{% url 'hardware:catalog' %}" class="btn-secondary">Resetează</a>
+            <a href="{{ request.path }}" class="btn-secondary" id="reset-filters">Reset</a>
         </div>
     </form>
+</section>
+
+<section class="sort-controls">
+    <span>Sortare după preț:</span>
+    <a href="{% update_query ord='a' sort=None page=None %}"
+       class="sort-link{% if order_param == 'a' %} active{% endif %}">Crescător</a>
+    <a href="{% update_query ord='d' sort=None page=None %}"
+       class="sort-link{% if order_param == 'd' %} active{% endif %}">Descrescător</a>
+    <a href="{% update_query ord=None sort=None page=None %}"
+       class="sort-link{% if not order_param %} active{% endif %}">Implicit</a>
 </section>
 
 <section class="catalog-grid">
     {% if products %}
         {% for product in products %}
         <article class="product-card">
-            <h2><a href="{% url 'hardware:product_detail' product.slug %}">{{ product.name }}</a></h2>
+            <header>
+                <h2><a href="{% url 'hardware:product_detail' product.slug %}">{{ product.name }}</a></h2>
+                <a class="category-badge"
+                   href="{% url 'hardware:category_detail' product.category.slug %}"
+                   {% if product.category.color_hex %}style="background-color: {{ product.category.color_hex }};"{% endif %}>
+                    {% if product.category.icon_class %}
+                    <i class="{{ product.category.icon_class }}" aria-hidden="true"></i>
+                    {% endif %}
+                    {{ product.category.name }}
+                </a>
+            </header>
             <p class="product-meta">
-                <span>{{ product.category.name }}</span> ·
-                <span>{{ product.brand.name }}</span> ·
+                <span>{{ product.brand.name }}</span>
+                <span>·</span>
                 <span>{{ product.get_condition_display }}</span>
+                <span>·</span>
+                <span>Stoc: {{ product.stock }}</span>
             </p>
             <p class="product-price">{{ product.price }} lei</p>
             <p class="product-description">{{ product.description|default:"Descriere indisponibilă momentan." }}</p>
             <form method="post" action="{% url 'hardware:cart_add' product.slug %}" class="add-to-cart-form">
                 {% csrf_token %}
-                <label class="sr-only" for="qty-{{ product.pk }}">Cantitate</label>
+                <label for="qty-{{ product.pk }}">Cantitate</label>
                 <input type="number" name="qty" id="qty-{{ product.pk }}" value="1" min="1" max="999">
                 <button type="submit" class="btn-primary">Adaugă în coș</button>
             </form>
         </article>
         {% endfor %}
     {% else %}
-    <p>Nu am găsit produse care să se potrivească filtrării curente.</p>
+    <p>Nu am găsit produse care să corespundă filtrării curente.</p>
     {% endif %}
 </section>
 
 {% if is_paginated %}
 <nav class="pagination">
     {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}{% if current_query %}&{{ current_query }}{% endif %}">« Anterior</a>
+    <a href="{% update_query page=page_obj.previous_page_number %}">« Anterior</a>
     {% endif %}
     <span>Pagina {{ page_obj.number }} din {{ page_obj.paginator.num_pages }}</span>
     {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}{% if current_query %}&{{ current_query }}{% endif %}">Următoare »</a>
+    <a href="{% update_query page=page_obj.next_page_number %}">Următoare »</a>
     {% endif %}
 </nav>
 {% endif %}
+
+<script>
+const resetLink = document.getElementById("reset-filters");
+if (resetLink) {
+    resetLink.addEventListener("click", function(event) {
+        const confirmed = window.confirm("Sigur dorești să resetezi filtrele? Valorile curente vor fi pierdute.");
+        if (!confirmed) {
+            event.preventDefault();
+        }
+    });
+}
+</script>
 {% endblock %}

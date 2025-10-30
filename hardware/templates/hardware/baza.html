@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Magazin Hardware{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'hardware/css/site.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
     <header class="site-header">
@@ -18,7 +19,17 @@
             <ul>
                 <li><a href="{% url 'hardware:home' %}">Pagina principală</a></li>
                 <li><a href="{% url 'hardware:despre' %}">Despre</a></li>
-                <li><a href="{% url 'hardware:catalog' %}">Catalog</a></li>
+                <li><a href="{% url 'hardware:products' %}">Produse</a></li>
+                <li class="nav-categories">
+                    <span>Categorii</span>
+                    <ul>
+                        {% for category in nav_categories %}
+                        <li><a href="{% url 'hardware:category_detail' category.slug %}">{{ category.name }}</a></li>
+                        {% empty %}
+                        <li><span>Fără categorii</span></li>
+                        {% endfor %}
+                    </ul>
+                </li>
                 <li><a href="{% url 'hardware:contact' %}">Contact</a></li>
                 <li><a href="{% url 'hardware:cart' %}">Coș virtual</a></li>
                 <li><a href="{% url 'hardware:tutoriale' %}">Tutoriale video</a></li>
@@ -27,6 +38,13 @@
             </ul>
         </nav>
     </header>
+    {% if messages %}
+    <section class="site-messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </section>
+    {% endif %}
     <main class="site-main">
         {% block content %}{% endblock %}
     </main>

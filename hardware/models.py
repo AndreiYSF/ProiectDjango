@@ -6,6 +6,8 @@ class Category(models.Model):
     name = models.CharField(max_length=120)
     slug = models.SlugField(unique=True)
     description = models.TextField(blank=True)
+    icon_class = models.CharField(max_length=120, blank=True)
+    color_hex = models.CharField(max_length=7, blank=True)
 
     class Meta:
         verbose_name = "Categorie"

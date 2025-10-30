@@ -5,7 +5,19 @@
 {% block content %}
 <section class="page-heading">
     <h1>{{ product.name }}</h1>
-    <p>{{ product.category.name }} · {{ product.brand.name }} · {{ product.get_condition_display }}</p>
+    <div class="product-heading-meta">
+        <a class="category-badge"
+           href="{% url 'hardware:category_detail' product.category.slug %}"
+           {% if product.category.color_hex %}style="background-color: {{ product.category.color_hex }};"{% endif %}>
+            {% if product.category.icon_class %}
+            <i class="{{ product.category.icon_class }}" aria-hidden="true"></i>
+            {% endif %}
+            {{ product.category.name }}
+        </a>
+        <span class="product-brand">{{ product.brand.name }}</span>
+        <span>·</span>
+        <span>{{ product.get_condition_display }}</span>
+    </div>
 </section>
 
 <section class="product-detail">
