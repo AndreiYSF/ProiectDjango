@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 
 from django.conf import settings
 from django.contrib import messages
+from django.db.models import Count
 from django.core.mail import send_mail
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -26,6 +27,7 @@ from .models import (
     RequestLog,
     Tutorial,
 )
+from .utils import Accesare, get_request_count
 
 
 ROMANIAN_DAYS = [
@@ -619,6 +621,129 @@ class LogListView(ListView):
             params.pop("page")
         context["params_encoded"] = params.urlencode()
         return context
+
+
+def log_view(request: HttpRequest) -> HttpResponse:
+    params = request.GET
+    errors: List[str] = []
+    info_messages: List[str] = []
+
+    queryset = RequestLog.objects.all().order_by("-created_at")
+    total_logs = queryset.count()
+
+    # ultimele
+    limit = None
+    ultimele_raw = params.get("ultimele")
+    if ultimele_raw not in (None, ""):
+        try:
+            limit = int(ultimele_raw)
+            if limit < 0:
+                raise ValueError
+        except ValueError:
+            errors.append("Parametrul ultimele trebuie să fie un număr întreg pozitiv.")
+            limit = None
+
+    # accesari param (alias nr)
+    accesari_param = params.get("accesari") or params.get("nr")
+    accesari_count = None
+    accesari_detalii: List[str] = []
+    if accesari_param:
+        if accesari_param == "nr":
+            accesari_count = get_request_count()
+        elif accesari_param == "detalii":
+            for moment in queryset.values_list("created_at", flat=True):
+                accesari_detalii.append(
+                    afis_data(moment=timezone.localtime(moment))
+                )
+        else:
+            errors.append("Parametrul accesari poate avea valorile „nr” sau „detalii”.")
+
+    # iduri + dubluri
+    dubluri_raw = params.get("dubluri", "false").lower()
+    dubluri = dubluri_raw in ("1", "true", "da", "y", "yes")
+    requested_ids: List[int] = []
+    bad_ids: List[str] = []
+    for raw_value in params.getlist("iduri"):
+        for item in raw_value.split(","):
+            item = item.strip()
+            if not item:
+                continue
+            try:
+                id_val = int(item)
+            except ValueError:
+                bad_ids.append(item)
+                continue
+            if dubluri or id_val not in requested_ids:
+                requested_ids.append(id_val)
+    if bad_ids:
+        errors.append(f"Id-urile trebuie să fie numere întregi. Ignorate: {', '.join(bad_ids)}.")
+
+    if requested_ids:
+        logs_map = {
+            log.id: log for log in RequestLog.objects.filter(id__in=requested_ids)
+        }
+        missing = [str(i) for i in requested_ids if i not in logs_map]
+        if missing:
+            errors.append(f"Nu am găsit accesările cu id-urile: {', '.join(missing)}.")
+        selected_logs = [logs_map[i] for i in requested_ids if i in logs_map]
+    else:
+        selected_logs = list(queryset[: limit or total_logs])
+        if limit is not None and limit > total_logs:
+            errors.append(
+                f"Exista doar {total_logs} accesari fata de {limit} accesari cerute"
+            )
+
+    accesari_list = [Accesare.from_request_log(log) for log in selected_logs]
+
+    # tabel param
+    table_param = params.get("tabel")
+    table_columns: List[str] = []
+    table_rows: List[List[str]] = []
+    column_map = {
+        "id": lambda a: a.id,
+        "url": lambda a: a.url(),
+        "ip": lambda a: a.ip_client,
+        "data": lambda a: a.data("%Y-%m-%d %H:%M:%S"),
+        "pagina": lambda a: a.pagina(),
+    }
+    if table_param:
+        if table_param == "tot":
+            table_columns = list(column_map.keys())
+        else:
+            requested_cols = [col.strip() for col in table_param.split(",") if col.strip()]
+            invalid_cols = [col for col in requested_cols if col not in column_map]
+            if invalid_cols:
+                errors.append(
+                    f"Coloanele {', '.join(invalid_cols)} nu sunt recunoscute. Folosește id, url, ip, data sau pagina."
+                )
+            table_columns = [col for col in requested_cols if col in column_map]
+        if table_columns:
+            for accesare in accesari_list:
+                table_rows.append([column_map[col](accesare) for col in table_columns])
+
+    # statistici pagini
+    path_counts = (
+        RequestLog.objects.values("path")
+        .annotate(cnt=Count("id"))
+        .order_by("cnt", "path")
+    )
+    least_accessed = path_counts.first()
+    most_accessed = path_counts.order_by("-cnt", "path").first()
+
+    context = {
+        "titlu": "Jurnal accesări",
+        "logs": accesari_list,
+        "errors": errors,
+        "info_messages": info_messages,
+        "accesari_count": accesari_count,
+        "accesari_detalii": accesari_detalii,
+        "table_columns": table_columns,
+        "table_rows": table_rows,
+        "least_page": least_accessed["path"] if least_accessed else None,
+        "most_page": most_accessed["path"] if most_accessed else None,
+        "total_logs": total_logs,
+    }
+    return render(request, "hardware/log_list.html", context)
 
 
 def info(request: HttpRequest) -> HttpResponse:

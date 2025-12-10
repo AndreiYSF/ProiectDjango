@@ -5,96 +5,98 @@
 {% block content %}
 <section class="page-heading">
     <h1>Jurnal accesări</h1>
-    <p>Monitorizează ultimele accesări ale aplicației. Filtrează după metodă HTTP, IP, cale sau interval de timp.</p>
+    <p>Total accesări înregistrate: {{ total_logs }}</p>
 </section>
 
-<section class="filter-section">
-    <form method="get" class="filter-form">
-        <div class="filter-grid">
-            <label>
-                Metodă
-                <select name="method">
-                    <option value="">Toate</option>
-                    {% for method in methods %}
-                    <option value="{{ method }}" {% if params.method == method %}selected{% endif %}>
-                        {{ method }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </label>
-            <label>
-                IP
-                <input type="text" name="ip" value="{{ params.ip }}">
-            </label>
-            <label>
-                Cale conține
-                <input type="text" name="path" value="{{ params.path }}">
-            </label>
-            <label>
-                De la (YYYY-MM-DD)
-                <input type="date" name="start" value="{{ params.start }}">
-            </label>
-            <label>
-                Până la (YYYY-MM-DD)
-                <input type="date" name="end" value="{{ params.end }}">
-            </label>
-        </div>
-        <div class="filter-actions">
-            <button type="submit" class="btn-primary">Aplică filtre</button>
-            <a href="{% url 'hardware:log' %}" class="btn-secondary">Resetează</a>
-        </div>
-    </form>
-</section>
-
-{% if filter_errors %}
+{% if errors %}
 <section class="messages errors">
-    <h2>Erori filtre</h2>
+    <h2>Erori</h2>
     <ul>
-        {% for error in filter_errors %}
+        {% for error in errors %}
         <li>{{ error }}</li>
         {% endfor %}
     </ul>
 </section>
 {% endif %}
 
+{% if info_messages %}
+<section class="messages infos">
+    <h2>Informații</h2>
+    <ul>
+        {% for message in info_messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if accesari_count is not None %}
+<section class="page-summary">
+    <h2>Număr accesări în sesiunea curentă</h2>
+    <p>{{ accesari_count }}</p>
+</section>
+{% endif %}
+
+{% if accesari_detalii %}
+<section class="page-summary">
+    <h2>Detalii accesări</h2>
+    <ul class="log-list">
+        {% for detaliu in accesari_detalii %}
+        <li>{{ detaliu }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if table_columns %}
 <section class="log-table">
+    <h2>Accesări în tabel</h2>
     <table>
         <thead>
             <tr>
-                <th>Moment</th>
-                <th>Metodă</th>
-                <th>Cale</th>
-                <th>Query</th>
-                <th>IP</th>
+                {% for col in table_columns %}
+                <th>{{ col|title }}</th>
+                {% endfor %}
             </tr>
         </thead>
         <tbody>
-            {% for log in logs %}
+            {% for row in table_rows %}
             <tr>
-                <td>{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
-                <td>{{ log.method }}</td>
-                <td>{{ log.path }}</td>
-                <td>{{ log.querystring|default:"-" }}</td>
-                <td>{{ log.ip|default:"-" }}</td>
+                {% for cell in row %}
+                <td>{{ cell }}</td>
+                {% endfor %}
             </tr>
             {% empty %}
             <tr>
-                <td colspan="5">Nu există accesări înregistrate pentru filtrele curente.</td>
+                <td colspan="{{ table_columns|length }}">Nu există accesări pentru parametrii actuali.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </section>
-
-{% if is_paginated %}
-<nav class="pagination">
-    {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}{% if params_encoded %}&{{ params_encoded }}{% endif %}">« Anterior</a>
-    {% endif %}
-    <span>Pagina {{ page_obj.number }} din {{ page_obj.paginator.num_pages }}</span>
-    {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}{% if params_encoded %}&{{ params_encoded }}{% endif %}">Următoare »</a>
-    {% endif %}
-</nav>
+{% else %}
+<section class="log-table">
+    <h2>Accesări</h2>
+    <ul class="log-list">
+        {% for log in logs %}
+        <li>
+            <strong>#{{ log.id }}</strong> — {{ log.url }} ({{ log.pagina }}) —
+            {{ log.ip_client }} — {{ log.data|date:"Y-m-d H:i:s" }}
+        </li>
+        {% empty %}
+        <li>Nu există accesări pentru parametrii actuali.</li>
+        {% endfor %}
+    </ul>
+</section>
 {% endif %}
+
+<section class="page-summary">
+    <h2>Statistici accesări</h2>
+    {% if least_page and most_page %}
+    <p>Cel mai puțin accesată: <code>{{ least_page }}</code></p>
+    <p>Cel mai mult accesată: <code>{{ most_page }}</code></p>
+    {% else %}
+    <p>Nu există suficientă activitate pentru statistici.</p>
+    {% endif %}
+</section>
 {% endblock %}

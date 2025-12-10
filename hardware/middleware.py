@@ -15,6 +15,9 @@ class RequestLoggingMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        from .utils import increment_request_count
+
+        increment_request_count()
         response = self.get_response(request)
         self._log_request(request)
         return response
