@@ -60,6 +60,7 @@ class ProductAdmin(admin.ModelAdmin):
                     "slug",
                     "category",
                     "brand",
+                    "image_path",
                     "price",
                     "stock",
                     "available",

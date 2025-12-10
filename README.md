@@ -48,6 +48,23 @@ Comanda este idempotentă (poate fi rulată de mai multe ori).
 
 Zona de administrare: `/admin/`.
 
+## Conținut
+
+- Pagina principală (`/`) – prezentare magazin hardware cu secțiuni pentru produse populare, branduri partenere și promoții curente (hero + cel puțin 3 secțiuni).
+- Despre (`/despre/`) – misiune, valori și experiență (minim 2 secțiuni + imagine din static).
+- Produse/Catalog (`/catalog/` și `/catalog/categorie/<slug>/`) – listă de produse cu paginare, sortare, filtre și badge vizual de categorie.
+- Detaliu produs (`/produs/<slug>/`) – toate detaliile produsului, accesorii și tutoriale asociate.
+- Contact (`/contact/`) – formular de contact și pagină de confirmare.
+- Coș virtual (`/cart/`) – conținutul coșului și acțiuni de adăugare/actualizare/ștergere.
+- Tutoriale (`/tutoriale/` și `/tutoriale/<slug>/`) – listă și detalii tutoriale video.
+- Info (`/info/`) – informații despre request și parametri.
+- Log (`/log/`) – jurnal accesări cu opțiuni de afișare/tabel/filtrare.
+- Blog (`/blog/`) – listă articole demo (aplicația `core`).
+
+## Diagramă BD
+
+Diagrama entităților (5–7 entități, inclusiv Product/Category/Brand/Material/Tutorial/Accessory) este disponibilă în `hardware/docs/hardware_erd.drawio` (format draw.io).
+
 ## Trimitere email
 
 În mediul de dezvoltare email-urile sunt redirecționate către consolă (setare `EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"`). Testele folosesc backend-ul `locmem` pentru a verifica tranzacțiile.

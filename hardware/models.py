@@ -68,6 +68,12 @@ class Product(models.Model):
     name = models.CharField(max_length=150)
     slug = models.SlugField(unique=True)
     description = models.TextField(blank=True, null=True)
+    image_path = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Cale relativă în static, ex: hardware/img/products/bormasina.jpg",
+    )
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
     available = models.BooleanField(default=True)

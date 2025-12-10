@@ -1,5 +1,6 @@
 {% extends "hardware/baza.html" %}
 {% load querystring %}
+{% load static %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
@@ -106,7 +107,7 @@
        class="sort-link{% if not order_param %} active{% endif %}">Implicit</a>
 </section>
 
-<section class="catalog-grid">
+    <section class="catalog-grid">
     {% if products %}
         {% for product in products %}
         <article class="product-card">
@@ -121,6 +122,11 @@
                     {{ product.category.name }}
                 </a>
             </header>
+            {% with product.image_path|default:"hardware/img/products/generic.jpeg" as img_path %}
+            <div class="product-thumb">
+                <img src="{% static img_path %}" alt="Imagine pentru {{ product.name }}">
+            </div>
+            {% endwith %}
             <p class="product-meta">
                 <span>{{ product.brand.name }}</span>
                 <span>·</span>
