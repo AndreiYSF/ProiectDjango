@@ -287,7 +287,7 @@ body {
 
 .catalog-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 1.5rem;
 }
 
@@ -297,15 +297,27 @@ body {
     border-radius: 1rem;
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
     display: grid;
-    gap: 0.75rem;
+    gap: 0.85rem;
+}
+
+.product-thumb {
+    height: 220px;
+    background: #e5e7eb;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
 }
 
 .product-thumb img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 0.75rem;
-    background: #e5e7eb;
+    max-height: 100%;
+    max-width: 100%;
+    height: auto;
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
 
 .product-card h2 a {
@@ -349,8 +361,14 @@ body {
 .add-to-cart-form,
 .cart-inline-form {
     display: flex;
-    gap: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.65rem;
     align-items: center;
+    width: 100%;
+}
+
+.add-to-cart-form input[type="number"] {
+    width: 90px;
 }
 
 .cart-table table {
