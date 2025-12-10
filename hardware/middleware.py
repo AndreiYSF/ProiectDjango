@@ -54,5 +54,4 @@ class RequestLoggingMiddleware:
                 user_agent=user_agent,
             )
         except (OperationalError, ProgrammingError):
-            # Baza de date nu este pregătită (ex: înainte de migrații). Ignorăm.
             pass

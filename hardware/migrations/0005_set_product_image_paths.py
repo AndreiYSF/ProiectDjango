@@ -12,7 +12,6 @@ def set_image_paths(apps, schema_editor):
     }
     for slug, path in slug_to_path.items():
         Product.objects.filter(slug=slug).update(image_path=path)
-    # fallback for produse fără setare
     Product.objects.filter(image_path__isnull=True).update(
         image_path="hardware/img/products/generic.jpeg"
     )

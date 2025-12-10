@@ -631,7 +631,6 @@ def log_view(request: HttpRequest) -> HttpResponse:
     queryset = RequestLog.objects.all().order_by("-created_at")
     total_logs = queryset.count()
 
-    # ultimele
     limit = None
     ultimele_raw = params.get("ultimele")
     if ultimele_raw not in (None, ""):
@@ -643,7 +642,6 @@ def log_view(request: HttpRequest) -> HttpResponse:
             errors.append("Parametrul ultimele trebuie să fie un număr întreg pozitiv.")
             limit = None
 
-    # accesari param (alias nr)
     accesari_param = params.get("accesari") or params.get("nr")
     accesari_count = None
     accesari_detalii: List[str] = []
@@ -658,7 +656,6 @@ def log_view(request: HttpRequest) -> HttpResponse:
         else:
             errors.append("Parametrul accesari poate avea valorile „nr” sau „detalii”.")
 
-    # iduri + dubluri
     dubluri_raw = params.get("dubluri", "false").lower()
     dubluri = dubluri_raw in ("1", "true", "da", "y", "yes")
     requested_ids: List[int] = []
@@ -695,7 +692,6 @@ def log_view(request: HttpRequest) -> HttpResponse:
 
     accesari_list = [Accesare.from_request_log(log) for log in selected_logs]
 
-    # tabel param
     table_param = params.get("tabel")
     table_columns: List[str] = []
     table_rows: List[List[str]] = []
@@ -721,7 +717,6 @@ def log_view(request: HttpRequest) -> HttpResponse:
             for accesare in accesari_list:
                 table_rows.append([column_map[col](accesare) for col in table_columns])
 
-    # statistici pagini
     path_counts = (
         RequestLog.objects.values("path")
         .annotate(cnt=Count("id"))
