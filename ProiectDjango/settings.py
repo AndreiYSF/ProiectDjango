@@ -21,6 +21,7 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver"]
 
 
 INSTALLED_APPS = [
+    "accounts",
     "hardware",
     "core",
     'django.contrib.admin',
@@ -101,3 +102,7 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = "accounts.User"
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "accounts:profile"

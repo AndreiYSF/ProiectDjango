@@ -1,0 +1,33 @@
+{% extends "hardware/baza.html" %}
+
+{% block title %}Profil utilizator{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>Profilul tău</h1>
+    <p>Informațiile sunt preluate din sesiune și contul tău curent.</p>
+</section>
+
+<section class="page-summary">
+    <h2>Date cont</h2>
+    <ul class="data-list">
+        <li><strong>Utilizator:</strong> {{ request.user.username }}</li>
+        <li><strong>Nume complet:</strong> {{ request.user.get_full_name }}</li>
+        <li><strong>Email:</strong> {{ request.user.email }}</li>
+    </ul>
+</section>
+
+<section class="page-summary">
+    <h2>Date profil (sesiune)</h2>
+    {% if profile_data %}
+    <ul class="data-list">
+        {% for k, v in profile_data.items %}
+        <li><code>{{ k }}</code>: {{ v|default:"-" }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Datele de profil nu sunt disponibile în sesiune.</p>
+    {% endif %}
+    <p><a class="btn-primary" href="{% url 'accounts:password_change' %}">Schimbă parola</a></p>
+</section>
+{% endblock %}

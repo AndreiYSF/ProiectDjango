@@ -35,6 +35,13 @@
                 <li><a href="{% url 'hardware:tutoriale' %}">Tutoriale video</a></li>
                 <li><a href="{% url 'hardware:info' %}">Info</a></li>
                 <li><a href="{% url 'hardware:log' %}">Log</a></li>
+                {% if request.user.is_authenticated %}
+                <li><a href="{% url 'accounts:profile' %}">Profil</a></li>
+                <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
+                {% else %}
+                <li><a href="{% url 'accounts:login' %}">Login</a></li>
+                <li><a href="{% url 'accounts:register' %}">Register</a></li>
+                {% endif %}
             </ul>
         </nav>
     </header>
