@@ -1,0 +1,14 @@
+{
+  "nume": "Iosif",
+  "prenume": "Andrei",
+  "varsta": "20 ani și 0 luni",
+  "cnp": "5051115420074",
+  "email": "iosifdey@gmail.com",
+  "tip_mesaj": "reclamatie",
+  "subiect": "Test",
+  "minim_zile_asteptare": 5,
+  "mesaj": "salut salut salut salut salut salut salut. Andrei Iosif",
+  "urgent": false,
+  "ip": "127.0.0.1",
+  "moment": "2025-12-11T08:47:49.555553+00:00"
+}

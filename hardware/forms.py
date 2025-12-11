@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from datetime import date, datetime
 from decimal import Decimal, ROUND_HALF_UP
 
 from django import forms
@@ -10,7 +11,8 @@ from django.utils.text import slugify
 from .models import Brand, Category, Material, Product
 
 
-TEXT_PATTERN = re.compile(r"^[A-Za-zĂÂÎȘȚăâîșț ]+$")
+TEXT_PATTERN = re.compile(r"^[A-Za-zĂÂÎȘȚăâîșț \-]+$")
+WORD_SPLIT = re.compile(r"[^\w]+", flags=re.UNICODE)
 
 
 def validate_capitalized_text(value: str, allow_empty: bool = False) -> str:
@@ -23,11 +25,55 @@ def validate_capitalized_text(value: str, allow_empty: bool = False) -> str:
         if allow_empty:
             return ""
         raise forms.ValidationError("Completați acest câmp.")
-    if not cleaned[0].isalpha() or not cleaned[0].isupper():
-        raise forms.ValidationError("Textul trebuie să înceapă cu literă mare.")
     if not TEXT_PATTERN.fullmatch(cleaned):
-        raise forms.ValidationError("Textul poate conține doar litere și spații.")
+        raise forms.ValidationError("Textul poate conține doar litere, spații și cratimă.")
+    tokens = re.split(r"[- ]", cleaned)
+    for token in tokens:
+        if not token:
+            continue
+        if not token[0].isupper():
+            raise forms.ValidationError(
+                "Fiecare cuvânt trebuie să înceapă cu literă mare."
+            )
+        if not token.isalpha():
+            raise forms.ValidationError("Textul poate conține doar litere, spații și cratimă.")
     return cleaned
+
+
+def validate_no_links(text: str, field_label: str) -> None:
+    if re.search(r"\bhttps?://", text, re.IGNORECASE):
+        raise forms.ValidationError(
+            f"{field_label} nu poate conține linkuri care încep cu http:// sau https://."
+        )
+
+
+def validate_word_lengths(text: str, max_length: int = 15) -> None:
+    for word in WORD_SPLIT.findall(text):
+        if len(word) > max_length:
+            raise forms.ValidationError(
+                f"Cuvintele din mesaj nu pot depăși {max_length} caractere."
+            )
+
+
+def parse_cnp(value: str, birth_date: date | None = None) -> date:
+    if not value:
+        return None
+    if not value.isdigit() or len(value) != 13:
+        raise forms.ValidationError("CNP-ul trebuie să conțină exact 13 cifre.")
+    first = value[0]
+    if first not in ("1", "2", "5", "6"):
+        raise forms.ValidationError("CNP-ul trebuie să înceapă cu 1, 2, 5 sau 6.")
+    year = int(value[1:3])
+    month = int(value[3:5])
+    day = int(value[5:7])
+    century = 1900 if first in ("1", "2") else 2000
+    try:
+        cnp_date = date(century + year, month, day)
+    except ValueError:
+        raise forms.ValidationError("CNP-ul nu conține o dată validă.")
+    if birth_date and cnp_date != birth_date:
+        raise forms.ValidationError("CNP-ul nu corespunde cu data nașterii.")
+    return cnp_date
 
 
 class ProductFilterForm(forms.Form):
@@ -218,6 +264,7 @@ class ProductFilterForm(forms.Form):
 
 class ContactForm(forms.Form):
     MESSAGE_CHOICES = [
+        ("", "Neselectat"),
         ("reclamatie", "Reclamație"),
         ("intrebare", "Întrebare"),
         ("review", "Review"),
@@ -226,15 +273,16 @@ class ContactForm(forms.Form):
     ]
 
     last_name = forms.CharField(label="Nume", max_length=10)
-    first_name = forms.CharField(label="Prenume", max_length=30, required=False)
+    first_name = forms.CharField(label="Prenume", max_length=10, required=False)
     birth_date = forms.DateField(
         label="Data nașterii",
         widget=forms.DateInput(attrs={"type": "date"}),
     )
+    cnp = forms.CharField(label="CNP", max_length=13, min_length=13, required=False)
     email = forms.EmailField(label="E-mail")
     confirm_email = forms.EmailField(label="Confirmare e-mail")
     message_type = forms.ChoiceField(label="Tip mesaj", choices=MESSAGE_CHOICES)
-    subject = forms.CharField(label="Subiect", max_length=120)
+    subject = forms.CharField(label="Subiect", max_length=100)
     min_wait_days = forms.IntegerField(
         label="Minim zile așteptare",
         min_value=1,
@@ -242,6 +290,9 @@ class ContactForm(forms.Form):
             "min_value": "Introduceți o valoare pozitivă pentru zilele de așteptare.",
             "invalid": "Introduceți un număr întreg pentru zilele de așteptare.",
         },
+        help_text=(
+            "Pentru review/cerere minim 4 zile, pentru întrebare/reclamație/programare minim 2 zile, maxim 30."
+        ),
     )
     message = forms.CharField(
         label="Mesaj (vă rugăm să vă semnați la final)",
@@ -257,19 +308,19 @@ class ContactForm(forms.Form):
         )
 
     def clean_subject(self):
-        return validate_capitalized_text(self.cleaned_data.get("subject"))
+        subject = validate_capitalized_text(self.cleaned_data.get("subject"))
+        validate_no_links(subject, "Subiectul")
+        return subject
 
     def clean_message(self):
         message = self.cleaned_data.get("message", "")
-        if re.search(r"https?://", message, re.IGNORECASE):
-            raise forms.ValidationError(
-                "Mesajul nu poate conține linkuri care încep cu http:// sau https://."
-            )
+        validate_no_links(message, "Mesajul")
         words = re.findall(r"\w+", message, flags=re.UNICODE)
         if not 5 <= len(words) <= 100:
             raise forms.ValidationError(
                 "Mesajul trebuie să conțină între 5 și 100 de cuvinte."
             )
+        validate_word_lengths(message, max_length=15)
         last_name = self.cleaned_data.get("last_name")
         if last_name and words:
             if words[-1].casefold() != last_name.strip().casefold():
@@ -277,6 +328,20 @@ class ContactForm(forms.Form):
                     "Ultimul cuvânt din mesaj trebuie să fie numele completat în formular."
                 )
         return message
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email", "")
+        domain = email.split("@")[-1].lower() if "@" in email else ""
+        if domain in {"guerillamail.com", "yopmail.com"}:
+            raise forms.ValidationError("Nu sunt permise domeniile temporare (guerillamail/yopmail).")
+        return email
+
+    def clean_cnp(self):
+        cnp = self.cleaned_data.get("cnp", "")
+        if not cnp:
+            return ""
+        parse_cnp(cnp)
+        return cnp
 
     def clean(self):
         cleaned_data = super().clean()
@@ -287,6 +352,14 @@ class ContactForm(forms.Form):
                 "confirm_email", "Adresele de e-mail trebuie să coincidă."
             )
         birth_date = cleaned_data.get("birth_date")
+        cnp = cleaned_data.get("cnp")
+        if cnp:
+            if not birth_date:
+                self.add_error("birth_date", "Completați data nașterii pentru validarea CNP-ului.")
+            try:
+                parse_cnp(cnp, birth_date)
+            except forms.ValidationError as exc:
+                self.add_error("cnp", exc.message)
         if birth_date:
             today = timezone.localdate()
             if birth_date > today:
@@ -300,12 +373,37 @@ class ContactForm(forms.Form):
                         "birth_date",
                         "Expeditorul trebuie să aibă cel puțin 18 ani.",
                     )
+        message_type = cleaned_data.get("message_type")
+        if message_type == "":
+            self.add_error("message_type", "Selectează un tip de mesaj.")
+        min_wait_days = cleaned_data.get("min_wait_days")
+        min_required = None
+        if message_type in ("review", "cerere"):
+            min_required = 4
+        elif message_type in ("intrebare", "reclamatie", "programare"):
+            min_required = 2
+        if min_wait_days is not None and min_wait_days > 30:
+            self.add_error(
+                "min_wait_days",
+                "Numărul maxim de zile de așteptare este 30.",
+            )
+        if min_required is not None and min_wait_days is not None:
+            if min_wait_days < min_required:
+                self.add_error(
+                    "min_wait_days",
+                    f"Pentru {message_type} trebuie să setezi cel puțin {min_required} zile.",
+                )
         return cleaned_data
 
     def normalized_data(self):
         data = self.cleaned_data.copy()
         message = data.get("message", "")
         message = re.sub(r"\s+", " ", message.replace("\n", " ")).strip()
+        def capitalize_after_punctuation(match: re.Match) -> str:
+            punct = match.group(1)
+            letter = match.group(2)
+            return f"{punct} {letter.upper()}"
+        message = re.sub(r"([\.!\?])\s*([a-zA-ZăâîșțĂÂÎȘȚ])", capitalize_after_punctuation, message)
         data["message"] = message
         birth_date = data.get("birth_date")
         if birth_date:
@@ -321,6 +419,14 @@ class ContactForm(forms.Form):
         data.pop("confirm_email", None)
         if "birth_date" in data:
             data.pop("birth_date")
+        min_required = None
+        if data.get("message_type") in ("review", "cerere"):
+            min_required = 4
+        elif data.get("message_type") in ("intrebare", "reclamatie", "programare"):
+            min_required = 2
+        data["urgent"] = False
+        if min_required is not None and data.get("min_wait_days") == min_required:
+            data["urgent"] = True
         return data
 
 

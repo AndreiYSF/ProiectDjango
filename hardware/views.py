@@ -514,17 +514,22 @@ class ContactView(FormView):
         messages_dir = Path(__file__).resolve().parent / "mesaje"
         messages_dir.mkdir(parents=True, exist_ok=True)
         timestamp = int(timezone.now().timestamp())
+        suffix = "_urgent" if data.get("urgent") else ""
         payload = {
             "nume": last_name,
             "prenume": first_name or "",
             "varsta": data.get("age_display"),
+            "cnp": data.get("cnp", ""),
             "email": data["email"],
             "tip_mesaj": data["message_type"],
             "subiect": data["subject"],
             "minim_zile_asteptare": data["min_wait_days"],
             "mesaj": message_text,
+            "urgent": data.get("urgent", False),
+            "ip": getattr(self.request, "META", {}).get("REMOTE_ADDR"),
+            "moment": timezone.now().isoformat(),
         }
-        file_path = messages_dir / f"mesaj_{timestamp}.json"
+        file_path = messages_dir / f"mesaj_{timestamp}{suffix}.json"
         with file_path.open("w", encoding="utf-8") as handler:
             json.dump(payload, handler, ensure_ascii=False, indent=2)
 
