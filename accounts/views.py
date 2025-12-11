@@ -70,12 +70,12 @@ class LoginView(DjangoLoginView):
 
 
 class LogoutView(DjangoLogoutView):
-    next_page = reverse_lazy("accounts:login")
+    next_page = reverse_lazy("hardware:home")
 
     def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         logout(request)
         messages.info(request, "Te-ai deconectat.")
-        return super().dispatch(request, *args, **kwargs)
+        return redirect(self.next_page)
 
 
 class ProfileView(LoginRequiredMixin, TemplateView):
