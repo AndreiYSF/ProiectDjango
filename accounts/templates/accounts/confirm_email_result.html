@@ -1,0 +1,15 @@
+{% extends "hardware/baza.html" %}
+
+{% block title %}Confirmare e-mail{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>Confirmare e-mail</h1>
+    <p>{{ message }}</p>
+    {% if success %}
+    <a class="btn-primary" href="{% url 'accounts:login' %}">Mergi la autentificare</a>
+    {% else %}
+    <a class="btn-secondary" href="{% url 'accounts:register' %}">Inregistreaza-te din nou</a>
+    {% endif %}
+</section>
+{% endblock %}

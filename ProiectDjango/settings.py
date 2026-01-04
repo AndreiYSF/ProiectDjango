@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import logging
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -106,3 +107,99 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "accounts:profile"
+
+
+ADMINS = [
+    ("Admin1", "admin1@example.com"),
+    ("Admin2", "admin2@example.com"),
+]
+DEFAULT_FROM_EMAIL = "no-reply@magazin-hardware.ro"
+SERVER_EMAIL = "server@magazin-hardware.ro"
+
+
+class LevelFilter(logging.Filter):
+    def __init__(self, level):
+        super().__init__()
+        if isinstance(level, str):
+            level = logging._nameToLevel.get(level, level)
+        self.level = level
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        return record.levelno == self.level
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "%(levelname)s %(asctime)s %(name)s %(message)s",
+        },
+        "simple": {
+            "format": "%(levelname)s %(message)s",
+        },
+    },
+    "filters": {
+        "debug_only": {"()": "ProiectDjango.settings.LevelFilter", "level": "DEBUG"},
+        "info_only": {"()": "ProiectDjango.settings.LevelFilter", "level": "INFO"},
+        "warning_only": {"()": "ProiectDjango.settings.LevelFilter", "level": "WARNING"},
+        "error_only": {"()": "ProiectDjango.settings.LevelFilter", "level": "ERROR"},
+        "critical_only": {"()": "ProiectDjango.settings.LevelFilter", "level": "CRITICAL"},
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "WARNING",
+            "formatter": "simple",
+        },
+        "debug_file": {
+            "class": "logging.FileHandler",
+            "level": "DEBUG",
+            "filename": str(BASE_DIR / "debug.log"),
+            "formatter": "verbose",
+            "filters": ["debug_only"],
+        },
+        "info_file": {
+            "class": "logging.FileHandler",
+            "level": "INFO",
+            "filename": str(BASE_DIR / "info.log"),
+            "formatter": "verbose",
+            "filters": ["info_only"],
+        },
+        "warning_file": {
+            "class": "logging.FileHandler",
+            "level": "WARNING",
+            "filename": str(BASE_DIR / "warning.log"),
+            "formatter": "verbose",
+            "filters": ["warning_only"],
+        },
+        "error_file": {
+            "class": "logging.FileHandler",
+            "level": "ERROR",
+            "filename": str(BASE_DIR / "error.log"),
+            "formatter": "verbose",
+            "filters": ["error_only"],
+        },
+        "critical_file": {
+            "class": "logging.FileHandler",
+            "level": "CRITICAL",
+            "filename": str(BASE_DIR / "critical.log"),
+            "formatter": "verbose",
+            "filters": ["critical_only"],
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": [
+                "console",
+                "debug_file",
+                "info_file",
+                "warning_file",
+                "error_file",
+                "critical_file",
+            ],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
+}

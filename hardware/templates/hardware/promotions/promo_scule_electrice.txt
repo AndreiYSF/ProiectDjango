@@ -1,0 +1,13 @@
+{{ subject }}
+
+Salut,
+
+Avem o oferta speciala pentru categoria "{{ category.name }}".
+Discount: {{ discount_percent }}%
+Cupon: {{ coupon_code|default:"-" }}
+Promotia expira la: {{ expires_at }}
+
+Mesaj:
+{{ message }}
+
+Te asteptam pe site pentru cele mai noi scule electrice.

@@ -1,0 +1,46 @@
+{% extends "hardware/baza.html" %}
+
+{% block title %}Promoții{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>Promoții</h1>
+    <p>Trimite oferte către utilizatorii interesați de anumite categorii.</p>
+</section>
+
+<section class="contact-form-section">
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="messages errors">
+            <ul>
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        <div class="form-grid">
+            {% for field in form %}
+            <div class="form-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                <p class="field-help">{{ field.help_text }}</p>
+                {% endif %}
+                {% if field.errors %}
+                <ul class="field-errors">
+                    {% for error in field.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn-primary">Trimite promoția</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

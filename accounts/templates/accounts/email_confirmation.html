@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmare e-mail</title>
+</head>
+<body>
+    <p><img src="{{ logo_url }}" alt="Logo Magazin Hardware" width="80"></p>
+    <h2>Bun venit, {{ user.first_name }} {{ user.last_name }}!</h2>
+    <p>Username: <strong>{{ user.username }}</strong></p>
+    <p>Apasa pe linkul de mai jos pentru a confirma e-mailul:</p>
+    <p><a href="{{ confirm_url }}">{{ confirm_url }}</a></p>
+    <p>Multumim,<br>Echipa Magazin Hardware</p>
+</body>
+</html>

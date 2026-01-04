@@ -8,6 +8,8 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
+from .utils import send_admin_alert
+
 User = get_user_model()
 
 
@@ -104,6 +106,17 @@ class RegistrationForm(UserCreationForm):
             raise forms.ValidationError("Strada trebuie să aibă minim 3 caractere.")
         return street
 
+    def clean_username(self):
+        username = self.cleaned_data.get("username", "").strip()
+        if username.lower() == "admin":
+            email = self.data.get("email", "")
+            send_admin_alert(
+                "cineva incearca sa ne preia site-ul",
+                f"Încercare de înregistrare cu username admin. Email furnizat: {email}",
+            )
+            raise forms.ValidationError("Acest username nu este permis.")
+        return username
+
 
 class LoginForm(AuthenticationForm):
     remember_me = forms.BooleanField(
@@ -111,3 +124,11 @@ class LoginForm(AuthenticationForm):
         required=False,
         initial=True,
     )
+
+    def confirm_login_allowed(self, user):
+        super().confirm_login_allowed(user)
+        if not getattr(user, "email_confirmat", False):
+            raise forms.ValidationError(
+                "Trebuie să confirmi e-mailul înainte de autentificare.",
+                code="email_neconfirmat",
+            )

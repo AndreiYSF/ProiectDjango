@@ -114,6 +114,23 @@ class ContactMessageAdmin(admin.ModelAdmin):
     ordering = ("processed", "-created_at")
 
 
+@admin.register(models.ProductView)
+class ProductViewAdmin(admin.ModelAdmin):
+    list_display = ("user", "product", "viewed_at")
+    list_filter = ("viewed_at", "product__category")
+    search_fields = ("user__username", "product__name", "product__slug")
+    ordering = ("-viewed_at",)
+
+
+@admin.register(models.Promotion)
+class PromotionAdmin(admin.ModelAdmin):
+    list_display = ("name", "subject", "expires_at", "discount_percent")
+    list_filter = ("expires_at",)
+    search_fields = ("name", "subject", "message", "coupon_code")
+    filter_horizontal = ("categories",)
+    ordering = ("-created_at",)
+
+
 admin.site.site_header = "Magazin Hardware - Panou de administrare"
 admin.site.site_title = "Magazin Hardware Admin"
 admin.site.index_title = "Gestionare conținut magazin"

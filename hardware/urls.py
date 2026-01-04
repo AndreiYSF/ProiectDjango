@@ -33,6 +33,7 @@ urlpatterns = [
         name="catalog_by_brand",
     ),
     path("produs/<slug:slug>/", views.ProductDetailView.as_view(), name="product_detail"),
+    path("promotii/", views.PromotionView.as_view(), name="promotii"),
     path("cart/", views.cart_detail, name="cart"),
     path("cart/add/<slug:slug>/", views.cart_add, name="cart_add"),
     path("cart/update/<slug:slug>/", views.cart_update, name="cart_update"),

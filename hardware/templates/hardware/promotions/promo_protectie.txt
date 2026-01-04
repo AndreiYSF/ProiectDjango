@@ -1,0 +1,13 @@
+{{ subject }}
+
+Buna,
+
+Protejeaza-te la lucru cu oferta pentru "{{ category.name }}".
+Discount: {{ discount_percent }}%
+Cupon: {{ coupon_code|default:"-" }}
+Data expirare: {{ expires_at }}
+
+Detalii:
+{{ message }}
+
+Spor si lucru in siguranta!

@@ -1,0 +1,9 @@
+Bun venit, {{ user.first_name }} {{ user.last_name }}!
+
+Username: {{ user.username }}
+
+Pentru a confirma adresa de e-mail, acceseaza linkul:
+{{ confirm_url }}
+
+Multumim,
+Echipa Magazin Hardware

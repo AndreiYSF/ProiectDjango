@@ -21,6 +21,8 @@ class CustomUserAdmin(UserAdmin):
                     "street",
                     "birth_date",
                     "newsletter_opt_in",
+                    "email_confirmat",
+                    "cod",
                 )
             },
         ),
@@ -57,6 +59,8 @@ class CustomUserAdmin(UserAdmin):
                     "street",
                     "birth_date",
                     "newsletter_opt_in",
+                    "email_confirmat",
+                    "cod",
                 ),
             },
         ),
@@ -69,7 +73,8 @@ class CustomUserAdmin(UserAdmin):
         "is_staff",
         "city",
         "country",
+        "email_confirmat",
     )
-    list_filter = ("is_staff", "is_superuser", "is_active", "groups", "country")
+    list_filter = ("is_staff", "is_superuser", "is_active", "groups", "country", "email_confirmat")
     search_fields = ("username", "first_name", "last_name", "email", "phone", "city")
     ordering = ("username",)

@@ -1,5 +1,7 @@
+from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 
 class Category(models.Model):
@@ -183,3 +185,50 @@ class ContactMessage(models.Model):
     def __str__(self) -> str:
         status = "procesat" if self.processed else "neprocesat"
         return f"{self.name} ({status})"
+
+
+class ProductView(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="product_views",
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="views",
+    )
+    viewed_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name = "Vizualizare produs"
+        verbose_name_plural = "Vizualizari produse"
+        ordering = ["-viewed_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "product"], name="unique_user_product_view")
+        ]
+        indexes = [
+            models.Index(fields=["user", "-viewed_at"], name="productview_user_time_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.user} -> {self.product} ({self.viewed_at:%Y-%m-%d %H:%M})"
+
+
+class Promotion(models.Model):
+    name = models.CharField(max_length=120)
+    subject = models.CharField(max_length=120)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateField()
+    discount_percent = models.PositiveIntegerField(default=10)
+    coupon_code = models.CharField(max_length=30, blank=True)
+    categories = models.ManyToManyField(Category, related_name="promotions", blank=True)
+
+    class Meta:
+        verbose_name = "Promotie"
+        verbose_name_plural = "Promotii"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.expires_at:%Y-%m-%d})"

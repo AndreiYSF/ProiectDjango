@@ -1,33 +1,55 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, time
+import logging
+from datetime import datetime, time, timedelta
 from decimal import Decimal
 from pathlib import Path
 from typing import Any, Dict, List
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.db.models import Count
-from django.core.mail import send_mail
+from django.core.mail import send_mail, send_mass_mail
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import FormView
 
-from .forms import ContactForm, ProductCreateForm, ProductFilterForm
+from accounts.utils import send_admin_alert
+from .forms import (
+    ContactForm,
+    ProductCreateForm,
+    ProductFilterForm,
+    PromotionForm,
+)
 from .models import (
     Brand,
     Category,
     ContactMessage,
     Product,
+    ProductView,
+    Promotion,
     RequestLog,
     Tutorial,
 )
 from .utils import Accesare, get_request_count
+
+
+logger = logging.getLogger("django")
+
+MAX_RECENT_VIEWS = 5
+MIN_VIEWS_FOR_PROMO = 2
+
+PROMO_TEMPLATES = {
+    "scule-electrice": "hardware/promotions/promo_scule_electrice.txt",
+    "echipamente-protectie": "hardware/promotions/promo_protectie.txt",
+}
 
 
 ROMANIAN_DAYS = [
@@ -367,7 +389,27 @@ class ProductDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         context["accessories"] = self.object.accessories.all()
         context["related_tutorials"] = self.object.tutorials.all()
+        if self.request.user.is_authenticated:
+            _record_product_view(self.request.user, self.object)
         return context
+
+
+def _record_product_view(user, product: Product) -> None:
+    view, created = ProductView.objects.get_or_create(
+        user=user,
+        product=product,
+        defaults={"viewed_at": timezone.now()},
+    )
+    if not created:
+        view.viewed_at = timezone.now()
+        view.save(update_fields=["viewed_at"])
+    logger.debug("Vizualizare produs inregistrata: %s / %s", user.username, product.slug)
+
+    views = ProductView.objects.filter(user=user).order_by("-viewed_at")
+    if views.count() > MAX_RECENT_VIEWS:
+        for stale in views[MAX_RECENT_VIEWS:]:
+            stale.delete()
+        logger.info("Curatate vizualizari vechi pentru user %s", user.username)
 
 
 class ProductCreateView(FormView):
@@ -378,6 +420,75 @@ class ProductCreateView(FormView):
         product = form.save()
         messages.success(self.request, "Produsul a fost creat cu succes.")
         return redirect("hardware:product_detail", slug=product.slug)
+
+
+class PromotionView(FormView):
+    template_name = "hardware/promotions.html"
+    form_class = PromotionForm
+    success_url = reverse_lazy("hardware:promotii")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        categories = Category.objects.filter(slug__in=PROMO_TEMPLATES.keys()).order_by("name")
+        kwargs["categories_queryset"] = categories
+        return kwargs
+
+    def form_valid(self, form: PromotionForm) -> HttpResponse:
+        data = form.cleaned_data
+        expires_at = timezone.localdate() + timedelta(days=data["duration_days"])
+        promotion = Promotion.objects.create(
+            name=data["name"],
+            subject=data["subject"],
+            message=data["message"],
+            expires_at=expires_at,
+            discount_percent=data["discount_percent"],
+            coupon_code=data["coupon_code"],
+        )
+        categories = data["categories"]
+        promotion.categories.set(categories)
+
+        sender = getattr(settings, "DEFAULT_FROM_EMAIL", "no-reply@example.com")
+        emails = []
+        User = get_user_model()
+        for category in categories:
+            template_name = PROMO_TEMPLATES.get(category.slug)
+            if not template_name:
+                continue
+            user_ids = (
+                ProductView.objects.filter(product__category=category)
+                .values("user")
+                .annotate(cnt=Count("id"))
+                .filter(cnt__gte=MIN_VIEWS_FOR_PROMO)
+                .values_list("user", flat=True)
+            )
+            recipients = list(
+                User.objects.filter(id__in=user_ids, email_confirmat=True)
+                .exclude(email="")
+                .values_list("email", flat=True)
+            )
+            logger.debug("Categorie %s are %s destinatari", category.slug, len(recipients))
+            if not recipients:
+                logger.warning("Nu exista destinatari pentru categoria %s", category.slug)
+                continue
+            context = {
+                "subject": data["subject"],
+                "expires_at": expires_at,
+                "message": data["message"],
+                "discount_percent": data["discount_percent"],
+                "coupon_code": data["coupon_code"],
+                "category": category,
+            }
+            body = render_to_string(template_name, context)
+            emails.append((data["subject"], body, sender, recipients))
+
+        if emails:
+            send_mass_mail(tuple(emails), fail_silently=False)
+            logger.info("Promotii trimise catre %s categorii", len(emails))
+        else:
+            logger.warning("Nu s-au trimis promotii (fara destinatari).")
+
+        messages.success(self.request, "Promoția a fost salvată și mailurile au fost trimise.")
+        return super().form_valid(form)
 
 
 def _get_cart(request: HttpRequest) -> Dict[str, Dict[str, Any]]:
@@ -529,9 +640,22 @@ class ContactView(FormView):
             "ip": getattr(self.request, "META", {}).get("REMOTE_ADDR"),
             "moment": timezone.now().isoformat(),
         }
-        file_path = messages_dir / f"mesaj_{timestamp}{suffix}.json"
-        with file_path.open("w", encoding="utf-8") as handler:
-            json.dump(payload, handler, ensure_ascii=False, indent=2)
+        try:
+            file_path = messages_dir / f"mesaj_{timestamp}{suffix}.json"
+            with file_path.open("w", encoding="utf-8") as handler:
+                json.dump(payload, handler, ensure_ascii=False, indent=2)
+        except Exception as exc:
+            logger.error("Eroare la salvarea mesajului in JSON: %s", exc)
+            logger.critical("Salvare mesaj contact esuata pentru %s", data.get("email"))
+            send_admin_alert(
+                "Eroare la salvarea mesajului de contact",
+                "Nu s-a putut salva mesajul de contact in fisier JSON.",
+                error_text=str(exc),
+            )
+            messages.warning(
+                self.request,
+                "Mesajul a fost salvat, dar fisierul JSON nu a putut fi scris.",
+            )
 
         messages.success(self.request, "Mesajul a fost trimis cu succes.")
         return super().form_valid(form)

@@ -537,3 +537,39 @@ class ProductCreateForm(forms.ModelForm):
             instance.save()
             self.save_m2m()
         return instance
+
+
+class PromotionForm(forms.Form):
+    subject = forms.CharField(label="Subiect", max_length=120)
+    message = forms.CharField(
+        label="Mesaj",
+        widget=forms.Textarea(attrs={"rows": 4}),
+    )
+    name = forms.CharField(label="Nume promoție", max_length=120)
+    duration_days = forms.IntegerField(
+        label="Timp promoție (zile)",
+        min_value=1,
+        initial=7,
+    )
+    categories = forms.ModelMultipleChoiceField(
+        label="Categorii",
+        queryset=Category.objects.none(),
+        widget=forms.CheckboxSelectMultiple,
+    )
+    discount_percent = forms.IntegerField(
+        label="Discount (%)",
+        min_value=1,
+        max_value=90,
+        initial=10,
+    )
+    coupon_code = forms.CharField(
+        label="Cod cupon",
+        max_length=30,
+        required=False,
+    )
+
+    def __init__(self, *args, categories_queryset=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        queryset = categories_queryset or Category.objects.order_by("name")
+        self.fields["categories"].queryset = queryset
+        self.fields["categories"].initial = list(queryset.values_list("id", flat=True))
