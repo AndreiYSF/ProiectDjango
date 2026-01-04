@@ -17,6 +17,23 @@
     </div>
 </section>
 
+{% if request.user.is_authenticated %}
+<div id="offer-banner" class="offer-banner">
+    <a href="{% url 'hardware:oferta_accepta' %}">OFERTA: reducere 50% (click pentru detalii)</a>
+</div>
+<script>
+    (function () {
+        var banner = document.getElementById("offer-banner");
+        if (!banner) {
+            return;
+        }
+        if (Math.random() < 0.3) {
+            banner.style.display = "block";
+        }
+    })();
+</script>
+{% endif %}
+
 {% for sectiune in sectiuni %}
 <section class="feature">
     <h2>{{ sectiune.titlu }}</h2>

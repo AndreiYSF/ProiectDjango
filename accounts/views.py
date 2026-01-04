@@ -7,6 +7,7 @@ import secrets
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
+from django.contrib.auth.models import Permission
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.contrib.auth.views import LogoutView as DjangoLogoutView
@@ -135,6 +136,10 @@ class LogoutView(DjangoLogoutView):
     next_page = reverse_lazy("hardware:home")
 
     def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        if request.user.is_authenticated:
+            perm = Permission.objects.filter(codename="vizualizeaza_oferta").first()
+            if perm:
+                request.user.user_permissions.remove(perm)
         logout(request)
         messages.info(request, "Te-ai deconectat.")
         return redirect(self.next_page)

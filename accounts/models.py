@@ -15,6 +15,7 @@ class User(AbstractUser):
     newsletter_opt_in = models.BooleanField(default=False)
     cod = models.CharField(max_length=100, null=True, blank=True)
     email_confirmat = models.BooleanField(default=False)
+    blocat = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     def age(self) -> str | None:

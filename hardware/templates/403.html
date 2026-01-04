@@ -1,0 +1,19 @@
+{% extends "hardware/baza.html" %}
+
+{% block title %}Eroare 403{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    {% if request.user.is_authenticated %}
+    <p>Salut {{ request.user.username }}</p>
+    {% else %}
+    <p>Salut preastimate anonim</p>
+    {% endif %}
+    <h1>{% if titlu %}{{ titlu }}{% else %}Eroare 403{% endif %}</h1>
+    <p>{{ mesaj_personalizat }}</p>
+    <p>Numar accesari 403 in sesiune: {{ nr_403 }}</p>
+    {% if nr_403 > N_MAX_403 %}
+    <p class="warn-403">Ai depasit numarul maxim de accesari 403.</p>
+    {% endif %}
+</section>
+{% endblock %}

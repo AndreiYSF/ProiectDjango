@@ -52,6 +52,30 @@ PROMO_TEMPLATES = {
 }
 
 
+def render_403(request: HttpRequest, *, titlu: str = "", mesaj_personalizat: str = "") -> HttpResponse:
+    count = request.session.get("forbidden_count", 0) + 1
+    request.session["forbidden_count"] = count
+    context = {
+        "titlu": titlu,
+        "mesaj_personalizat": mesaj_personalizat,
+        "nr_403": count,
+        "N_MAX_403": getattr(settings, "N_MAX_403", 5),
+    }
+    return render(request, "403.html", context, status=403)
+
+
+def custom_403(request: HttpRequest, exception=None) -> HttpResponse:
+    return render_403(
+        request,
+        titlu="",
+        mesaj_personalizat="Accesul la resursa curenta nu este permis.",
+    )
+
+
+def _is_site_admin(user) -> bool:
+    return user.is_authenticated and user.groups.filter(name="Administratori_site").exists()
+
+
 ROMANIAN_DAYS = [
     "Luni",
     "Marți",
@@ -416,10 +440,55 @@ class ProductCreateView(FormView):
     template_name = "hardware/product_create.html"
     form_class = ProductCreateForm
 
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        if not request.user.has_perm("hardware.add_product"):
+            return render_403(
+                request,
+                titlu="Eroare adaugare produse",
+                mesaj_personalizat="Nu ai voie să adaugi produse hardware.",
+            )
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form: ProductCreateForm):
         product = form.save()
         messages.success(self.request, "Produsul a fost creat cu succes.")
         return redirect("hardware:product_detail", slug=product.slug)
+
+
+def interzis(request: HttpRequest) -> HttpResponse:
+    return render_403(
+        request,
+        titlu="Acces interzis",
+        mesaj_personalizat="Nu ai voie să accesezi această pagină.",
+    )
+
+
+def oferta(request: HttpRequest) -> HttpResponse:
+    if not request.user.is_authenticated or not request.user.has_perm(
+        "hardware.vizualizeaza_oferta"
+    ):
+        return render_403(
+            request,
+            titlu="Eroare afisare oferta",
+            mesaj_personalizat="Nu ai voie să vizualizezi oferta.",
+        )
+    return render(request, "hardware/oferta.html")
+
+
+def accepta_oferta(request: HttpRequest) -> HttpResponse:
+    if not request.user.is_authenticated:
+        return render_403(
+            request,
+            titlu="Eroare afisare oferta",
+            mesaj_personalizat="Nu ai voie să vizualizezi oferta.",
+        )
+    from django.contrib.auth.models import Permission
+
+    perm = Permission.objects.filter(codename="vizualizeaza_oferta").first()
+    if perm:
+        request.user.user_permissions.add(perm)
+        logger.info("Permisiune oferta acordata pentru %s", request.user.username)
+    return redirect("hardware:oferta")
 
 
 class PromotionView(FormView):
@@ -753,6 +822,12 @@ class LogListView(ListView):
 
 
 def log_view(request: HttpRequest) -> HttpResponse:
+    if not _is_site_admin(request.user):
+        return render_403(
+            request,
+            titlu="Eroare acces log",
+            mesaj_personalizat="Nu ai voie să accesezi jurnalul de accesări.",
+        )
     params = request.GET
     errors: List[str] = []
     info_messages: List[str] = []
@@ -871,6 +946,12 @@ def log_view(request: HttpRequest) -> HttpResponse:
 
 
 def info(request: HttpRequest) -> HttpResponse:
+    if not _is_site_admin(request.user):
+        return render_403(
+            request,
+            titlu="Eroare acces info",
+            mesaj_personalizat="Nu ai voie să accesezi pagina info.",
+        )
     data_param = request.GET.get("data")
     if data_param not in (None, "zi", "timp", ""):
         data_param = None

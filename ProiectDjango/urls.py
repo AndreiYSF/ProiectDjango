@@ -10,3 +10,5 @@ urlpatterns = [
     path("cont/", include("accounts.urls")),
     path("", include("hardware.urls")),
 ]
+
+handler403 = "hardware.views.custom_403"

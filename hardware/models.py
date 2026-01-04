@@ -94,6 +94,9 @@ class Product(models.Model):
         verbose_name = "Produs"
         verbose_name_plural = "Produse"
         ordering = ["name"]
+        permissions = [
+            ("vizualizeaza_oferta", "Poate vizualiza oferta speciala"),
+        ]
         indexes = [
             models.Index(fields=["slug"], name="product_slug_idx"),
             models.Index(

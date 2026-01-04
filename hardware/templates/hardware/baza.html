@@ -33,8 +33,13 @@
                 <li><a href="{% url 'hardware:contact' %}">Contact</a></li>
                 <li><a href="{% url 'hardware:cart' %}">Coș virtual</a></li>
                 <li><a href="{% url 'hardware:tutoriale' %}">Tutoriale video</a></li>
+                {% if can_view_admin_pages %}
                 <li><a href="{% url 'hardware:info' %}">Info</a></li>
                 <li><a href="{% url 'hardware:log' %}">Log</a></li>
+                {% endif %}
+                {% if can_add_product %}
+                <li><a href="{% url 'hardware:product_create' %}">Adaugă produs</a></li>
+                {% endif %}
                 <li><a href="{% url 'hardware:promotii' %}">Promoții</a></li>
                 {% if request.user.is_authenticated %}
                 <li><a href="{% url 'accounts:profile' %}">Profil</a></li>
