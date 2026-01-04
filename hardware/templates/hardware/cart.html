@@ -26,15 +26,45 @@
                 <td><a href="{% url 'hardware:product_detail' item.slug %}">{{ item.name }}</a></td>
                 <td>{{ item.price }} lei</td>
                 <td>
-                    <form method="post" action="{% url 'hardware:cart_update' item.slug %}" class="cart-inline-form">
+                    <div class="cart-controls">
+                    <form method="post"
+                          action="{% url 'hardware:cart_decrement' item.slug %}"
+                          class="cart-inline-form"
+                          data-cart-action="dec"
+                          data-product-id="{{ item.product_id }}">
                         {% csrf_token %}
-                        <input type="number" name="qty" value="{{ item.qty }}" min="1" max="999">
+                        <button type="submit" class="btn-secondary">-</button>
+                    </form>
+                    <form method="post"
+                          action="{% url 'hardware:cart_increment' item.slug %}"
+                          class="cart-inline-form"
+                          data-cart-action="inc"
+                          data-product-id="{{ item.product_id }}"
+                          data-product-name="{{ item.name }}"
+                          data-product-price="{{ item.price }}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-secondary"
+                                {% if item.stock <= 0 or item.qty >= item.stock %}disabled{% endif %}>+</button>
+                    </form>
+                    <form method="post"
+                          action="{% url 'hardware:cart_update' item.slug %}"
+                          class="cart-inline-form"
+                          data-cart-action="set"
+                          data-product-id="{{ item.product_id }}"
+                          data-product-name="{{ item.name }}"
+                          data-product-price="{{ item.price }}">
+                        {% csrf_token %}
+                        <input type="number" name="qty" value="{{ item.qty }}" min="1" max="{{ item.stock }}">
                         <button type="submit" class="btn-secondary">Actualizează</button>
                     </form>
+                    </div>
                 </td>
                 <td>{{ item.subtotal }} lei</td>
                 <td>
-                    <form method="post" action="{% url 'hardware:cart_remove' item.slug %}">
+                    <form method="post"
+                          action="{% url 'hardware:cart_remove' item.slug %}"
+                          data-cart-action="remove"
+                          data-product-id="{{ item.product_id }}">
                         {% csrf_token %}
                         <button type="submit" class="btn-danger">Elimină</button>
                     </form>
@@ -50,6 +80,7 @@
     <p class="cart-total">{{ total }} lei</p>
     <div class="cart-actions">
         <a class="btn-secondary" href="{% url 'hardware:catalog' %}">Continuă cumpărăturile</a>
+        <a class="btn-secondary" href="{% url 'hardware:cart_local' %}">Coș local (localStorage)</a>
         <button class="btn-primary" type="button" disabled>Finalizează (în curând)</button>
     </div>
 </section>

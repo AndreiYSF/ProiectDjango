@@ -7,6 +7,9 @@
 <section class="page-heading">
     <h1>{{ product.name }}</h1>
     <div class="product-heading-meta">
+        {% if in_cart %}
+        <span class="in-cart-badge">În coș ({{ cart_qty }})</span>
+        {% endif %}
         <a class="category-badge"
            href="{% url 'hardware:category_detail' product.category.slug %}"
            {% if product.category.color_hex %}style="background-color: {{ product.category.color_hex }};"{% endif %}>
@@ -41,12 +44,61 @@
         </div>
         {% endif %}
 
-        <form method="post" action="{% url 'hardware:cart_add' product.slug %}" class="add-to-cart-form">
-            {% csrf_token %}
-            <label for="qty">Cantitate</label>
-            <input type="number" name="qty" id="qty" value="1" min="1" max="999">
-            <button type="submit" class="btn-primary">Adaugă în coș</button>
-        </form>
+        <div class="cart-controls">
+            {% if in_cart %}
+            <form method="post" action="{% url 'hardware:cart_decrement' product.slug %}"
+                  class="cart-inline-form"
+                  data-cart-action="dec"
+                  data-product-id="{{ product.id }}">
+                {% csrf_token %}
+                <button type="submit" class="btn-secondary">-</button>
+            </form>
+            <form method="post" action="{% url 'hardware:cart_increment' product.slug %}"
+                  class="cart-inline-form"
+                  data-cart-action="inc"
+                  data-product-id="{{ product.id }}"
+                  data-product-name="{{ product.name }}"
+                  data-product-price="{{ product.price }}">
+                {% csrf_token %}
+                <button type="submit" class="btn-secondary"
+                        {% if product.stock <= 0 or cart_qty >= product.stock %}disabled{% endif %}>+</button>
+            </form>
+            <form method="post" action="{% url 'hardware:cart_update' product.slug %}"
+                  class="cart-inline-form"
+                  data-cart-action="set"
+                  data-product-id="{{ product.id }}"
+                  data-product-name="{{ product.name }}"
+                  data-product-price="{{ product.price }}">
+                {% csrf_token %}
+                <label for="qty">Cantitate</label>
+                <input type="number" name="qty" id="qty" value="{{ cart_qty }}" min="1"
+                       max="{% if product.stock > 0 %}{{ product.stock }}{% else %}1{% endif %}">
+                <button type="submit" class="btn-secondary">Actualizează</button>
+            </form>
+            <form method="post" action="{% url 'hardware:cart_remove' product.slug %}"
+                  class="cart-inline-form"
+                  data-cart-action="remove"
+                  data-product-id="{{ product.id }}">
+                {% csrf_token %}
+                <button type="submit" class="btn-danger">Elimină</button>
+            </form>
+            {% else %}
+            <form method="post" action="{% url 'hardware:cart_add' product.slug %}"
+                  class="add-to-cart-form"
+                  data-cart-action="add"
+                  data-product-id="{{ product.id }}"
+                  data-product-name="{{ product.name }}"
+                  data-product-price="{{ product.price }}">
+                {% csrf_token %}
+                <label for="qty">Cantitate</label>
+                <input type="number" name="qty" id="qty" value="1" min="1"
+                       max="{% if product.stock > 0 %}{{ product.stock }}{% else %}1{% endif %}">
+                <button type="submit" class="btn-primary" {% if product.stock <= 0 %}disabled{% endif %}>
+                    Adaugă în coș
+                </button>
+            </form>
+            {% endif %}
+        </div>
     </div>
 
     <div class="product-media">

@@ -334,6 +334,16 @@ body {
     gap: 0.85rem;
 }
 
+.in-cart-badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    background: #e0f2fe;
+    color: #075985;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
 .product-thumb {
     height: 220px;
     background: #e5e7eb;
@@ -399,6 +409,15 @@ body {
     gap: 0.65rem;
     align-items: center;
     width: 100%;
+}
+
+.cart-controls {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.cart-controls .cart-inline-form {
+    width: auto;
 }
 
 .add-to-cart-form input[type="number"] {

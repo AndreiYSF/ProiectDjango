@@ -331,6 +331,12 @@ class ProductsListView(ListView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
+        cart = _get_cart(self.request)
+        cart_qty = {int(pid): int(entry.get("qty", 0)) for pid, entry in cart.items() if str(pid).isdigit()}
+        products = context.get("products", [])
+        for product in products:
+            product.cart_qty = cart_qty.get(product.id, 0)
+        context["cart_qty"] = cart_qty
         context["filter_form"] = self.filter_form or self.get_form()
         context["current_category"] = self.current_category
         context["current_brand"] = self.current_brand
@@ -413,6 +419,10 @@ class ProductDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         context["accessories"] = self.object.accessories.all()
         context["related_tutorials"] = self.object.tutorials.all()
+        cart = _get_cart(self.request)
+        entry = cart.get(str(self.object.pk))
+        context["in_cart"] = bool(entry)
+        context["cart_qty"] = int(entry.get("qty", 0)) if entry else 0
         if self.request.user.is_authenticated:
             _record_product_view(self.request.user, self.object)
         return context
@@ -569,26 +579,65 @@ def _save_cart(request: HttpRequest, cart: Dict[str, Dict[str, Any]]) -> None:
     request.session.modified = True
 
 
+def _redirect_back(request: HttpRequest) -> HttpResponse:
+    fallback = reverse_lazy("hardware:cart")
+    return redirect(request.META.get("HTTP_REFERER", fallback))
+
+
 def cart_detail(request: HttpRequest) -> HttpResponse:
     cart = _get_cart(request)
     items = []
     total = Decimal("0")
+    product_ids = [int(pid) for pid in cart.keys() if str(pid).isdigit()]
+    products_map = {
+        product.id: product
+        for product in Product.objects.filter(id__in=product_ids)
+    }
+    missing_ids = [pid for pid in product_ids if pid not in products_map]
+    if missing_ids:
+        for pid in missing_ids:
+            cart.pop(str(pid), None)
+        _save_cart(request, cart)
+        messages.warning(request, "Unele produse nu mai sunt disponibile și au fost scoase din coș.")
 
-    for product_id, entry in cart.items():
+    cart_updated = False
+    for product_id, entry in list(cart.items()):
+        product = products_map.get(int(product_id))
+        if not product:
+            continue
         price = Decimal(str(entry.get("price", "0")))
         qty = int(entry.get("qty", 0))
+        if product.stock <= 0:
+            cart.pop(str(product_id), None)
+            cart_updated = True
+            messages.warning(
+                request,
+                f"{product.name} nu mai este in stoc si a fost scos din cos.",
+            )
+            continue
+        if qty > product.stock:
+            qty = product.stock
+            cart[str(product_id)]["qty"] = qty
+            cart_updated = True
+            messages.warning(
+                request,
+                f"Stoc insuficient pentru {product.name}. Cantitatea a fost ajustata la {qty}.",
+            )
         subtotal = price * qty
         total += subtotal
         items.append(
             {
                 "product_id": int(product_id),
-                "name": entry.get("name"),
-                "slug": entry.get("slug"),
+                "name": product.name,
+                "slug": product.slug,
                 "price": price,
                 "qty": qty,
                 "subtotal": subtotal,
+                "stock": product.stock,
             }
         )
+    if cart_updated:
+        _save_cart(request, cart)
 
     context = {
         "items": items,
@@ -597,21 +646,41 @@ def cart_detail(request: HttpRequest) -> HttpResponse:
     return render(request, "hardware/cart.html", context)
 
 
+def cart_local(request: HttpRequest) -> HttpResponse:
+    return render(request, "hardware/cart_local.html")
+
+
 @require_POST
 def cart_add(request: HttpRequest, slug: str) -> HttpResponse:
     product = get_object_or_404(Product, slug=slug, available=True)
     cart = _get_cart(request)
     product_key = str(product.pk)
+    if product.stock <= 0:
+        messages.error(request, "Produsul este momentan epuizat.")
+        return _redirect_back(request)
     try:
         qty = int(request.POST.get("qty", 1))
     except (TypeError, ValueError):
         messages.error(request, "Cantitatea introdusa nu este valida. Am folosit 1.")
         qty = 1
-    qty = max(1, min(qty, 999))
+    max_qty = min(product.stock, 999)
+    if qty > max_qty:
+        messages.warning(
+            request,
+            f"Stoc insuficient. Cantitatea pentru {product.name} a fost limitată la {max_qty}.",
+        )
+    qty = max(1, min(qty, max_qty))
 
     if product_key in cart:
         current_qty = int(cart[product_key].get("qty", 0))
-        cart[product_key]["qty"] = max(1, min(current_qty + qty, 999))
+        new_qty = current_qty + qty
+        if new_qty > max_qty:
+            new_qty = max_qty
+            messages.warning(
+                request,
+                f"Stoc insuficient. Cantitatea pentru {product.name} a fost limitată la {max_qty}.",
+            )
+        cart[product_key]["qty"] = max(1, new_qty)
     else:
         cart[product_key] = {
             "name": product.name,
@@ -622,7 +691,7 @@ def cart_add(request: HttpRequest, slug: str) -> HttpResponse:
 
     _save_cart(request, cart)
     messages.info(request, f"{product.name} a fost adaugat in cos.")
-    return redirect("hardware:cart")
+    return _redirect_back(request)
 
 
 @require_POST
@@ -632,17 +701,31 @@ def cart_update(request: HttpRequest, slug: str) -> HttpResponse:
     product_key = str(product.pk)
 
     if product_key in cart:
+        raw_qty = request.POST.get("qty", "1")
+        raw_qty_value = None
         try:
-            qty = int(request.POST.get("qty", 1))
+            qty = int(raw_qty)
+            raw_qty_value = qty
         except (TypeError, ValueError):
             messages.error(request, "Cantitatea introdusa nu este valida. Nu am modificat cosul.")
             qty = 1
-        qty = max(1, min(qty, 999))
+        max_qty = min(product.stock, 999)
+        if max_qty <= 0:
+            cart.pop(product_key, None)
+            _save_cart(request, cart)
+            messages.warning(request, f"{product.name} nu mai este in stoc si a fost scos din cos.")
+            return _redirect_back(request)
+        qty = max(1, min(qty, max_qty))
+        if raw_qty_value is not None and raw_qty_value > max_qty:
+            messages.warning(
+                request,
+                f"Stoc insuficient. Cantitatea pentru {product.name} a fost limitată la {max_qty}.",
+            )
         cart[product_key]["qty"] = qty
         _save_cart(request, cart)
         messages.info(request, f"Cosul a fost actualizat pentru {product.name}.")
 
-    return redirect("hardware:cart")
+    return _redirect_back(request)
 
 
 @require_POST
@@ -654,8 +737,56 @@ def cart_remove(request: HttpRequest, slug: str) -> HttpResponse:
     if product_key in cart:
         cart.pop(product_key)
         _save_cart(request, cart)
+        messages.info(request, f"{product.name} a fost eliminat din cos.")
 
-    return redirect("hardware:cart")
+    return _redirect_back(request)
+
+
+@require_POST
+def cart_increment(request: HttpRequest, slug: str) -> HttpResponse:
+    product = get_object_or_404(Product, slug=slug, available=True)
+    cart = _get_cart(request)
+    product_key = str(product.pk)
+    if product.stock <= 0:
+        messages.error(request, "Produsul este momentan epuizat.")
+        return _redirect_back(request)
+
+    current_qty = int(cart.get(product_key, {}).get("qty", 0))
+    max_qty = min(product.stock, 999)
+    if current_qty + 1 > max_qty:
+        messages.warning(
+            request,
+            f"Stoc insuficient. Cantitatea pentru {product.name} este deja maximă.",
+        )
+        return _redirect_back(request)
+    cart[product_key] = {
+        "name": product.name,
+        "slug": product.slug,
+        "price": str(product.price),
+        "qty": current_qty + 1,
+    }
+    _save_cart(request, cart)
+    messages.info(request, f"Am adaugat un produs {product.name} in cos.")
+    return _redirect_back(request)
+
+
+@require_POST
+def cart_decrement(request: HttpRequest, slug: str) -> HttpResponse:
+    product = get_object_or_404(Product, slug=slug)
+    cart = _get_cart(request)
+    product_key = str(product.pk)
+
+    if product_key in cart:
+        current_qty = int(cart[product_key].get("qty", 0))
+        if current_qty <= 1:
+            cart.pop(product_key, None)
+            messages.info(request, f"{product.name} a fost eliminat din cos.")
+        else:
+            cart[product_key]["qty"] = current_qty - 1
+            messages.info(request, f"Am scazut cantitatea pentru {product.name}.")
+        _save_cart(request, cart)
+
+    return _redirect_back(request)
 
 
 class ContactView(FormView):

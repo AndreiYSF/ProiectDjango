@@ -39,8 +39,11 @@ urlpatterns = [
     path("promotii/", views.PromotionView.as_view(), name="promotii"),
     path("cart/", views.cart_detail, name="cart"),
     path("cart/add/<slug:slug>/", views.cart_add, name="cart_add"),
+    path("cart/inc/<slug:slug>/", views.cart_increment, name="cart_increment"),
+    path("cart/dec/<slug:slug>/", views.cart_decrement, name="cart_decrement"),
     path("cart/update/<slug:slug>/", views.cart_update, name="cart_update"),
     path("cart/remove/<slug:slug>/", views.cart_remove, name="cart_remove"),
+    path("cart-local/", views.cart_local, name="cart_local"),
     path("contact/", views.ContactView.as_view(), name="contact"),
     path("tutoriale/", views.TutorialsListView.as_view(), name="tutoriale"),
     path(

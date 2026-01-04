@@ -1,0 +1,36 @@
+{% extends "hardware/baza.html" %}
+
+{% block title %}Coș local (localStorage){% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>Coș local</h1>
+    <p>Produsele salvate în localStorage și cantitățile alese.</p>
+</section>
+
+<section class="cart-table">
+    <div class="sort-controls">
+        <span>Sortare:</span>
+        <button class="btn-secondary" type="button" data-sort="name">Nume</button>
+        <button class="btn-secondary" type="button" data-sort="price">Preț</button>
+    </div>
+    <table id="local-cart-table">
+        <thead>
+            <tr>
+                <th>Produs</th>
+                <th>Preț unitar</th>
+                <th>Cantitate</th>
+                <th>Total linie</th>
+            </tr>
+        </thead>
+        <tbody id="local-cart-body">
+        </tbody>
+    </table>
+</section>
+
+<section class="cart-summary">
+    <h2>Total</h2>
+    <p class="cart-total" id="local-cart-total">0 lei</p>
+    <p id="local-cart-count">0 produse</p>
+</section>
+{% endblock %}
