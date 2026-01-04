@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 
@@ -22,6 +23,9 @@ class Category(models.Model):
     def __str__(self) -> str:
         return self.name
 
+    def get_absolute_url(self):
+        return reverse("hardware:category_detail", kwargs={"slug": self.slug})
+
 
 class Brand(models.Model):
     name = models.CharField(max_length=120)
@@ -40,6 +44,9 @@ class Brand(models.Model):
     def __str__(self) -> str:
         return self.name
 
+    def get_absolute_url(self):
+        return reverse("hardware:brand_detail", kwargs={"slug": self.slug})
+
 
 class Material(models.Model):
     name = models.CharField(max_length=120)
@@ -53,6 +60,9 @@ class Material(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def get_absolute_url(self):
+        return reverse("hardware:product_detail", kwargs={"slug": self.slug})
 
 
 class Product(models.Model):
@@ -148,6 +158,9 @@ class Tutorial(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    def get_absolute_url(self):
+        return reverse("hardware:tutorial_detail", kwargs={"slug": self.slug})
 
 
 class RequestLog(models.Model):

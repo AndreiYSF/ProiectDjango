@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sitemaps',
     'django.contrib.staticfiles',
 ]
 
@@ -108,6 +109,15 @@ AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "accounts:profile"
 N_MAX_403 = 5
+
+CLEANUP_UNCONFIRMED_MINUTES = 2
+NEWSLETTER_DAY = "marti"
+NEWSLETTER_HOUR = 10
+NEWSLETTER_MIN_AGE_MINUTES = 30
+LOG_CLEANUP_INTERVAL_MINUTES = 15
+REQUESTLOG_RETENTION_DAYS = 14
+PROMO_CLEANUP_DAY = "vineri"
+PROMO_CLEANUP_HOUR = 9
 
 
 ADMINS = [

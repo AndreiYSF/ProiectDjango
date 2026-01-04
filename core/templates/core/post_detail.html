@@ -1,0 +1,14 @@
+{% extends "hardware/baza.html" %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>{{ post.title }}</h1>
+    <p>Publicat la {{ post.created_at|date:"d MMMM Y" }}</p>
+</section>
+
+<section class="feature">
+    <p>{{ post.content }}</p>
+</section>
+{% endblock %}

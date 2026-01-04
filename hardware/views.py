@@ -605,6 +605,7 @@ def cart_add(request: HttpRequest, slug: str) -> HttpResponse:
     try:
         qty = int(request.POST.get("qty", 1))
     except (TypeError, ValueError):
+        messages.error(request, "Cantitatea introdusa nu este valida. Am folosit 1.")
         qty = 1
     qty = max(1, min(qty, 999))
 
@@ -620,6 +621,7 @@ def cart_add(request: HttpRequest, slug: str) -> HttpResponse:
         }
 
     _save_cart(request, cart)
+    messages.info(request, f"{product.name} a fost adaugat in cos.")
     return redirect("hardware:cart")
 
 
@@ -633,10 +635,12 @@ def cart_update(request: HttpRequest, slug: str) -> HttpResponse:
         try:
             qty = int(request.POST.get("qty", 1))
         except (TypeError, ValueError):
+            messages.error(request, "Cantitatea introdusa nu este valida. Nu am modificat cosul.")
             qty = 1
         qty = max(1, min(qty, 999))
         cart[product_key]["qty"] = qty
         _save_cart(request, cart)
+        messages.info(request, f"Cosul a fost actualizat pentru {product.name}.")
 
     return redirect("hardware:cart")
 
@@ -834,6 +838,7 @@ def log_view(request: HttpRequest) -> HttpResponse:
 
     queryset = RequestLog.objects.all().order_by("-created_at")
     total_logs = queryset.count()
+    messages.debug(request, f"Total accesari inregistrate: {total_logs}")
 
     limit = None
     ultimele_raw = params.get("ultimele")
@@ -963,6 +968,7 @@ def info(request: HttpRequest) -> HttpResponse:
     for cheie, valori in request.GET.lists():
         for valoare in valori:
             parametri.append((cheie, valoare))
+    messages.debug(request, f"Info page cu {len(parametri)} parametri.")
 
     context = {
         "titlu": "Informații despre server",

@@ -111,6 +111,7 @@ class LoginView(DjangoLoginView):
             self.request.session.set_expiry(86400)
         else:
             self.request.session.set_expiry(0)
+        messages.info(self.request, f"Bine ai revenit, {user.username}!")
         return response
 
     def get_success_url(self) -> str:
