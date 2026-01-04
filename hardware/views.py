@@ -140,6 +140,7 @@ class HomeView(TemplateView):
         context["sectiuni"] = [
             {
                 "titlu": "Produse populare",
+                "icon": "fa-solid fa-screwdriver-wrench",
                 "descriere": (
                     "Descoperă bormașinile, șurubelnițele electrice și accesoriile "
                     "preferate de profesioniști și pasionați de bricolaj."
@@ -147,6 +148,7 @@ class HomeView(TemplateView):
             },
             {
                 "titlu": "Branduri partenere",
+                "icon": "fa-solid fa-industry",
                 "descriere": (
                     "Colaborăm cu mărci precum Bosch, DeWalt, Makita sau Black+Decker "
                     "pentru a-ți livra scule de încredere."
@@ -154,6 +156,7 @@ class HomeView(TemplateView):
             },
             {
                 "titlu": "Promoții curente",
+                "icon": "fa-solid fa-tags",
                 "descriere": (
                     "Oferta se actualizează săptămânal cu pachete de accesorii și "
                     "discount-uri la colecțiile de sezon."

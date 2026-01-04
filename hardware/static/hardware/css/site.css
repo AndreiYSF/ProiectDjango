@@ -113,6 +113,17 @@ body {
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
 }
 
+.page-heading {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.page-heading p,
+.feature p,
+.about-section p {
+    max-width: 70ch;
+}
+
 .feature h2,
 .about-section h2 {
     margin-bottom: 0.75rem;
@@ -120,10 +131,16 @@ body {
 }
 
 .about-section ul {
-    list-style: disc;
-    padding-left: 1.5rem;
+    list-style: none;
+    padding-left: 0;
     display: grid;
     gap: 0.5rem;
+}
+
+.about-section ul li {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
 }
 
 .about-image {
@@ -372,6 +389,40 @@ body {
 .product-meta {
     color: #4b5563;
     font-size: 0.9rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.product-meta i {
+    color: #0f172a;
+    margin-right: 0.35rem;
+}
+
+.contact-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.contact-card {
+    background-color: #ffffff;
+    padding: 1rem 1.25rem;
+    border-radius: 0.9rem;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+    display: grid;
+    gap: 0.35rem;
+}
+
+.contact-card i {
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+
+.contact-card p {
+    max-width: 45ch;
 }
 
 .product-price {

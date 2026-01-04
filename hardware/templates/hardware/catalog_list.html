@@ -136,11 +136,9 @@
             </div>
             {% endwith %}
             <p class="product-meta">
-                <span>{{ product.brand.name }}</span>
-                <span>·</span>
-                <span>{{ product.get_condition_display }}</span>
-                <span>·</span>
-                <span>Stoc: {{ product.stock }}</span>
+                <span><i class="fa-solid fa-industry" aria-hidden="true"></i>{{ product.brand.name }}</span>
+                <span><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i>{{ product.get_condition_display }}</span>
+                <span><i class="fa-solid fa-warehouse" aria-hidden="true"></i>Stoc: {{ product.stock }}</span>
             </p>
             <p class="product-price">{% price_eur product.price %}Pret: {{ product.price }} RON{% endprice_eur %}</p>
             <p class="product-description">{{ product.description|default:"Descriere indisponibilă momentan." }}</p>

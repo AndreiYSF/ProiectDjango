@@ -23,17 +23,17 @@
             {% endif %}
             {{ product.category.name }}
         </a>
-        <span class="product-brand">{{ product.brand.name }}</span>
-        <span>·</span>
-        <span>{{ product.get_condition_display }}</span>
+        <span class="product-brand"><i class="fa-solid fa-industry" aria-hidden="true"></i>{{ product.brand.name }}</span>
+        <span><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i>{{ product.get_condition_display }}</span>
     </div>
 </section>
 
 <section class="product-detail">
     <div class="product-info">
         <p class="product-price">{% price_eur product.price %}Pret: {{ product.price }} RON{% endprice_eur %}</p>
-        <p>Disponibilitate: <strong>{% if product.available %}În stoc{% else %}Stoc epuizat{% endif %}</strong></p>
-        <p>Stoc curent: {{ product.stock }} buc.</p>
+        <p><i class="fa-solid fa-check-circle" aria-hidden="true"></i> Disponibilitate:
+            <strong>{% if product.available %}În stoc{% else %}Stoc epuizat{% endif %}</strong></p>
+        <p><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Stoc curent: {{ product.stock }} buc.</p>
         <p class="product-description">{{ product.description|default:"Acest produs nu are încă o descriere detaliată." }}</p>
 
         {% if product.materials.all %}

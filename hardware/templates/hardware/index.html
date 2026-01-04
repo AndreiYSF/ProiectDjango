@@ -12,8 +12,8 @@
     <div class="hero-text">
         <h1>Magazin de hardware (scule &amp; unelte)</h1>
         <p>
-            Magazin de hardware (scule &amp; unelte): produse bormașini, șurubelnițe electrice, accesorii construcții.
-            Include și o pagină cu tutoriale video.
+            Magazin de hardware (scule &amp; unelte): produse <strong>bormașini</strong>, <strong>șurubelnițe electrice</strong>,
+            accesorii construcții și echipamente de protecție. Include și o pagină cu <strong>tutoriale video</strong>.
         </p>
     </div>
     <div class="hero-image">
@@ -40,7 +40,12 @@
 
 {% for sectiune in sectiuni %}
 <section class="feature">
-    <h2>{{ sectiune.titlu }}</h2>
+    <h2>
+        {% if sectiune.icon %}
+        <i class="{{ sectiune.icon }}" aria-hidden="true"></i>
+        {% endif %}
+        {{ sectiune.titlu }}
+    </h2>
     <p>{{ sectiune.descriere }}</p>
 </section>
 {% endfor %}
