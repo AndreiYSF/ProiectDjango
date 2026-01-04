@@ -1,9 +1,14 @@
 {% extends "hardware/baza.html" %}
 {% load static %}
+{% load daily_product %}
+{% load price_tags %}
+{% load recent_views %}
 
 {% block title %}{{ product.name }} - Detalii produs{% endblock %}
 
 {% block content %}
+{% product_of_day %}
+{% recent_views %}
 <section class="page-heading">
     <h1>{{ product.name }}</h1>
     <div class="product-heading-meta">
@@ -26,7 +31,7 @@
 
 <section class="product-detail">
     <div class="product-info">
-        <p class="product-price">Preț: <strong>{{ product.price }} lei</strong></p>
+        <p class="product-price">{% price_eur product.price %}Pret: {{ product.price }} RON{% endprice_eur %}</p>
         <p>Disponibilitate: <strong>{% if product.available %}În stoc{% else %}Stoc epuizat{% endif %}</strong></p>
         <p>Stoc curent: {{ product.stock }} buc.</p>
         <p class="product-description">{{ product.description|default:"Acest produs nu are încă o descriere detaliată." }}</p>

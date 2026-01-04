@@ -420,6 +420,35 @@ body {
     width: auto;
 }
 
+.daily-product-banner {
+    background: #fff1c2;
+    border: 2px solid #f0b429;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.daily-product-banner a {
+    color: #92400e;
+    text-decoration: none;
+}
+
+.price-eur {
+    position: relative;
+    font-weight: 700;
+}
+
+.price-eur .eur {
+    display: none;
+    margin-left: 6px;
+    color: #475569;
+}
+
+.price-eur:hover .eur {
+    display: inline;
+}
+
 .add-to-cart-form input[type="number"] {
     width: 90px;
 }

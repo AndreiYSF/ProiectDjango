@@ -9,6 +9,7 @@ class HardwareConfig(AppConfig):
 
     def ready(self):
         post_migrate.connect(create_default_groups, sender=self)
+        from . import signals  # noqa: F401
 
 
 def create_default_groups(sender, **kwargs):

@@ -1,4 +1,5 @@
 {% load static %}
+{% load cache %}
 <!DOCTYPE html>
 <html lang="ro">
 <head>
@@ -22,6 +23,7 @@
                 <li><a href="{% url 'hardware:products' %}">Produse</a></li>
                 <li class="nav-categories">
                     <span>Categorii</span>
+                    {% cache 21600 nav_categories_menu %}
                     <ul>
                         {% for category in nav_categories %}
                         <li><a href="{% url 'hardware:category_detail' category.slug %}">{{ category.name }}</a></li>
@@ -29,6 +31,7 @@
                         <li><span>Fără categorii</span></li>
                         {% endfor %}
                     </ul>
+                    {% endcache %}
                 </li>
                 <li><a href="{% url 'hardware:contact' %}">Contact</a></li>
                 <li><a href="{% url 'hardware:cart' %}">Coș virtual</a></li>
@@ -64,6 +67,7 @@
     {% now "Y" as current_year %}
     <footer class="site-footer">
         <p>Adresă IP client: {{ request.META.REMOTE_ADDR|default:"necunoscut" }}</p>
+        <p>{{ support_message }}</p>
         <p>&copy; {{ current_year }} Magazin de hardware - proiect educațional.</p>
     </footer>
     <script src="{% static 'hardware/js/local_cart.js' %}"></script>

@@ -43,7 +43,9 @@ urlpatterns = [
     path("cart/dec/<slug:slug>/", views.cart_decrement, name="cart_decrement"),
     path("cart/update/<slug:slug>/", views.cart_update, name="cart_update"),
     path("cart/remove/<slug:slug>/", views.cart_remove, name="cart_remove"),
+    path("cart/checkout/", views.cart_checkout, name="cart_checkout"),
     path("cart-local/", views.cart_local, name="cart_local"),
+    path("rating/<int:product_id>/<int:rating>/", views.rate_product, name="rate_product"),
     path("contact/", views.ContactView.as_view(), name="contact"),
     path("tutoriale/", views.TutorialsListView.as_view(), name="tutoriale"),
     path(

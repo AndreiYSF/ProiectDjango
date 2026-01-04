@@ -10,9 +10,12 @@ from typing import Any, Dict, List
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.db import connection
 from django.db.models import Count
+from django.core.cache import cache
 from django.core.mail import send_mail, send_mass_mail
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
@@ -35,6 +38,9 @@ from .models import (
     Product,
     ProductView,
     Promotion,
+    Purchase,
+    Nota,
+    FeedbackRequest,
     RequestLog,
     Tutorial,
 )
@@ -50,6 +56,14 @@ PROMO_TEMPLATES = {
     "scule-electrice": "hardware/promotions/promo_scule_electrice.txt",
     "echipamente-protectie": "hardware/promotions/promo_protectie.txt",
 }
+
+
+def _per_page_cache_key(request: HttpRequest) -> str:
+    if request.user.is_authenticated:
+        return f"per_page:user:{request.user.id}"
+    if not request.session.session_key:
+        request.session.save()
+    return f"per_page:session:{request.session.session_key}"
 
 
 def render_403(request: HttpRequest, *, titlu: str = "", mesaj_personalizat: str = "") -> HttpResponse:
@@ -212,6 +226,9 @@ class ProductsListView(ListView):
             )
             if self.current_brand is not None:
                 self._form.fields["brand"].initial = self.current_brand.pk
+            cached_per_page = cache.get(_per_page_cache_key(self.request))
+            if cached_per_page:
+                self._form.fields["per_page"].initial = cached_per_page
         return self._form
 
     def _query_without_page(self) -> str:
@@ -232,6 +249,8 @@ class ProductsListView(ListView):
 
         form = self.get_form()
         self.filter_form = form
+        cache_key = _per_page_cache_key(self.request)
+        cached_per_page = cache.get(cache_key)
 
         if form.is_valid():
             data = form.cleaned_data
@@ -284,6 +303,14 @@ class ProductsListView(ListView):
                 queryset = queryset.filter(materials__in=materials).distinct()
 
             per_page_value = data.get("per_page") or form.DEFAULT_PER_PAGE
+            if "per_page" in self.request.GET:
+                cache.set(
+                    cache_key,
+                    per_page_value,
+                    timeout=settings.PER_PAGE_CACHE_SECONDS,
+                )
+            elif cached_per_page:
+                per_page_value = cached_per_page
             self.per_page = per_page_value
             if (
                 "per_page" in self.request.GET
@@ -300,7 +327,7 @@ class ProductsListView(ListView):
                     "Categoria a fost resetată deoarece nu poate fi modificată din această pagină.",
                 )
         else:
-            self.per_page = form.DEFAULT_PER_PAGE
+            self.per_page = cached_per_page or form.DEFAULT_PER_PAGE
 
         sort_param = self.request.GET.get("sort")
         order_param = self.request.GET.get("ord")
@@ -789,6 +816,70 @@ def cart_decrement(request: HttpRequest, slug: str) -> HttpResponse:
     return _redirect_back(request)
 
 
+@login_required
+@require_POST
+def cart_checkout(request: HttpRequest) -> HttpResponse:
+    cart = _get_cart(request)
+    if not cart:
+        messages.warning(request, "Coșul este gol.")
+        return _redirect_back(request)
+
+    product_ids = [int(pid) for pid in cart.keys() if str(pid).isdigit()]
+    products = Product.objects.filter(id__in=product_ids)
+    products_map = {product.id: product for product in products}
+    purchased_any = False
+
+    for product_id, entry in list(cart.items()):
+        product = products_map.get(int(product_id))
+        if not product:
+            cart.pop(product_id, None)
+            continue
+        qty = int(entry.get("qty", 0))
+        if qty <= 0:
+            cart.pop(product_id, None)
+            continue
+        if product.stock <= 0:
+            messages.warning(request, f"{product.name} nu mai este in stoc.")
+            continue
+        buy_qty = min(qty, product.stock)
+        Purchase.objects.create(
+            user=request.user,
+            product=product,
+            quantity=buy_qty,
+        )
+        product.stock -= buy_qty
+        if product.stock <= 0:
+            product.stock = 0
+            product.available = False
+        product.save(update_fields=["stock", "available"])
+        purchased_any = True
+        cart.pop(product_id, None)
+        if buy_qty < qty:
+            messages.warning(
+                request,
+                f"Stoc insuficient pentru {product.name}. Au fost cumparate doar {buy_qty} buc.",
+            )
+
+    _save_cart(request, cart)
+    if purchased_any:
+        messages.success(request, "Comanda a fost inregistrata. Vei primi cereri de feedback.")
+    return redirect("hardware:cart")
+
+
+@login_required
+def rate_product(request: HttpRequest, product_id: int, rating: int) -> HttpResponse:
+    if rating < 1 or rating > 5:
+        return HttpResponseBadRequest("Rating invalid. Alege un numar intre 1 si 5.")
+    product = get_object_or_404(Product, id=product_id)
+    if Nota.objects.filter(user=request.user, product=product).exists():
+        messages.info(request, "Ai acordat deja o nota pentru acest produs.")
+        return redirect("hardware:product_detail", slug=product.slug)
+    Nota.objects.create(user=request.user, product=product, rating=rating)
+    FeedbackRequest.objects.filter(user=request.user, product=product).delete()
+    messages.success(request, f"Multumim pentru nota {rating} acordata produsului {product.name}.")
+    return redirect("hardware:product_detail", slug=product.slug)
+
+
 class ContactView(FormView):
     template_name = "hardware/contact.html"
     form_class = ContactForm
@@ -966,6 +1057,7 @@ def log_view(request: HttpRequest) -> HttpResponse:
     params = request.GET
     errors: List[str] = []
     info_messages: List[str] = []
+    sql_enabled = params.get("sql") == "true"
 
     queryset = RequestLog.objects.all().order_by("-created_at")
     total_logs = queryset.count()
@@ -1031,6 +1123,8 @@ def log_view(request: HttpRequest) -> HttpResponse:
             )
 
     accesari_list = [Accesare.from_request_log(log) for log in selected_logs]
+    sql_queries = connection.queries if sql_enabled else []
+    sql_total = len(sql_queries) * len(accesari_list)
 
     table_param = params.get("tabel")
     table_columns: List[str] = []
@@ -1077,6 +1171,9 @@ def log_view(request: HttpRequest) -> HttpResponse:
         "least_page": least_accessed["path"] if least_accessed else None,
         "most_page": most_accessed["path"] if most_accessed else None,
         "total_logs": total_logs,
+        "sql_enabled": sql_enabled,
+        "sql_queries": sql_queries,
+        "sql_total": sql_total,
     }
     return render(request, "hardware/log_list.html", context)
 

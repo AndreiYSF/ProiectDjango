@@ -137,3 +137,29 @@ class LoginForm(AuthenticationForm):
                 "Trebuie să confirmi e-mailul înainte de autentificare.",
                 code="email_neconfirmat",
             )
+
+
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = (
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+            "country",
+            "county",
+            "city",
+            "street",
+            "birth_date",
+            "newsletter_opt_in",
+        )
+        widgets = {
+            "birth_date": forms.DateInput(attrs={"type": "date"}),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email", "").lower()
+        if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError("Există deja un cont cu acest e-mail.")
+        return email

@@ -1,10 +1,15 @@
 {% extends "hardware/baza.html" %}
 {% load querystring %}
 {% load static %}
+{% load daily_product %}
+{% load price_tags %}
+{% load recent_views %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
+{% product_of_day %}
+{% recent_views %}
 <section class="page-heading">
     <h1>{{ page_title }}</h1>
     {% if is_category_page and current_category %}
@@ -137,7 +142,7 @@
                 <span>·</span>
                 <span>Stoc: {{ product.stock }}</span>
             </p>
-            <p class="product-price">{{ product.price }} lei</p>
+            <p class="product-price">{% price_eur product.price %}Pret: {{ product.price }} RON{% endprice_eur %}</p>
             <p class="product-description">{{ product.description|default:"Descriere indisponibilă momentan." }}</p>
             <div class="cart-controls">
                 {% if product.cart_qty %}

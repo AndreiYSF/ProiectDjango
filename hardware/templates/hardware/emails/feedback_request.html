@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Feedback produs</title>
+</head>
+<body>
+    <p>Salut, {{ user.first_name|default:user.username }}!</p>
+    <p>Ai cumpărat produsul <strong>{{ product.name }}</strong>. Te rugăm să ne oferi un rating.</p>
+    <p>
+        {% for item in rating_links %}
+        <a href="{{ item.url }}" style="text-decoration:none;margin-right:6px;">
+            <span style="font-size:22px;">★</span><span style="font-size:12px;vertical-align:super;">{{ item.rating }}</span>
+        </a>
+        {% endfor %}
+    </p>
+    <p>Mulțumim!</p>
+</body>
+</html>

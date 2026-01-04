@@ -248,3 +248,77 @@ class Promotion(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name} ({self.expires_at:%Y-%m-%d})"
+
+
+class Purchase(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="purchases",
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="purchases",
+    )
+    quantity = models.PositiveIntegerField(default=1)
+    purchased_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Achizitie"
+        verbose_name_plural = "Achizitii"
+        ordering = ["-purchased_at"]
+
+    def __str__(self) -> str:
+        return f"{self.user} - {self.product} ({self.quantity})"
+
+
+class Nota(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notes",
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="notes",
+    )
+    rating = models.PositiveIntegerField()
+    rated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Nota"
+        verbose_name_plural = "Note"
+        constraints = [
+            models.UniqueConstraint(fields=["user", "product"], name="unique_user_product_rating")
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.user} -> {self.product}: {self.rating}"
+
+
+class FeedbackRequest(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="feedback_requests",
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="feedback_requests",
+    )
+    next_send_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Cerere feedback"
+        verbose_name_plural = "Cereri feedback"
+        ordering = ["next_send_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "product"], name="unique_feedback_request")
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.user} - {self.product} ({self.next_send_at:%Y-%m-%d})"

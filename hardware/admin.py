@@ -131,6 +131,30 @@ class PromotionAdmin(admin.ModelAdmin):
     ordering = ("-created_at",)
 
 
+@admin.register(models.Purchase)
+class PurchaseAdmin(admin.ModelAdmin):
+    list_display = ("user", "product", "quantity", "purchased_at")
+    list_filter = ("purchased_at", "product__category")
+    search_fields = ("user__username", "product__name")
+    ordering = ("-purchased_at",)
+
+
+@admin.register(models.Nota)
+class NotaAdmin(admin.ModelAdmin):
+    list_display = ("user", "product", "rating", "rated_at")
+    list_filter = ("rating", "rated_at")
+    search_fields = ("user__username", "product__name")
+    ordering = ("-rated_at",)
+
+
+@admin.register(models.FeedbackRequest)
+class FeedbackRequestAdmin(admin.ModelAdmin):
+    list_display = ("user", "product", "next_send_at", "created_at")
+    list_filter = ("next_send_at",)
+    search_fields = ("user__username", "product__name")
+    ordering = ("next_send_at",)
+
+
 admin.site.site_header = "Magazin Hardware - Panou de administrare"
 admin.site.site_title = "Magazin Hardware Admin"
 admin.site.index_title = "Gestionare conținut magazin"

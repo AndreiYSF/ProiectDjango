@@ -82,11 +82,28 @@
         <li>
             <strong>#{{ log.id }}</strong> — {{ log.url }} ({{ log.pagina }}) —
             {{ log.ip_client }} — {{ log.data|date:"Y-m-d H:i:s" }}
+            {% if sql_enabled %}
+            <div class="sql-queries">
+                <p>Comenzi SQL: {{ sql_queries|length }}</p>
+                <ul class="log-list">
+                    {% for query in sql_queries %}
+                    <li><code>{{ query.sql }}</code> ({{ query.time }}s)</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
         </li>
         {% empty %}
         <li>Nu există accesări pentru parametrii actuali.</li>
         {% endfor %}
     </ul>
+</section>
+{% endif %}
+
+{% if sql_enabled %}
+<section class="page-summary">
+    <h2>Total comenzi SQL</h2>
+    <p>{{ sql_total }}</p>
 </section>
 {% endif %}
 

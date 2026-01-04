@@ -19,6 +19,7 @@ SECRET_KEY = 'django-insecure-*hx38fn!24wl+$vl)21x0u)-^wv2zteu2jalu_xehdhf9m7#3_
 DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver"]
+INTERNAL_IPS = ["127.0.0.1", "localhost"]
 
 
 INSTALLED_APPS = [
@@ -57,7 +58,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.debug',
                 'hardware.context_processors.categories_menu',
+                'hardware.context_processors.support_status',
             ],
         },
     },
@@ -70,6 +73,14 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache",
+        "TIMEOUT": 60 * 60,
     }
 }
 
@@ -118,6 +129,13 @@ LOG_CLEANUP_INTERVAL_MINUTES = 15
 REQUESTLOG_RETENTION_DAYS = 14
 PROMO_CLEANUP_DAY = "vineri"
 PROMO_CLEANUP_HOUR = 9
+FEEDBACK_CHECK_INTERVAL_MINUTES = 5
+
+PROFILE_CACHE_SECONDS = 60 * 60 * 24 * 5
+PER_PAGE_CACHE_SECONDS = 60 * 60 * 24 * 7
+VIZ_PROD = 4
+EUR_RATE = 4.95
+SITE_URL = "http://localhost:8000"
 
 
 ADMINS = [

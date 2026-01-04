@@ -21,7 +21,7 @@ from django.templatetags.static import static
 from django.urls import reverse, reverse_lazy
 from django.views.generic import FormView, TemplateView
 
-from .forms import LoginForm, RegistrationForm
+from .forms import LoginForm, ProfileUpdateForm, RegistrationForm
 from .models import User
 from .utils import send_admin_alert
 
@@ -29,6 +29,10 @@ from .utils import send_admin_alert
 logger = logging.getLogger("django")
 LOGIN_FAIL_LIMIT = 3
 LOGIN_FAIL_WINDOW = 120
+
+
+def profile_cache_key(user_id: int) -> str:
+    return f"profile_page:{user_id}"
 
 
 def store_profile_in_session(request: HttpRequest, user: User) -> None:
@@ -149,6 +153,18 @@ class LogoutView(DjangoLogoutView):
 class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = "accounts/profile.html"
 
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        cache_key = profile_cache_key(request.user.id)
+        cached = cache.get(cache_key)
+        if cached:
+            response = HttpResponse(cached, content_type="text/html")
+            response["Vary"] = "Cookie"
+            return response
+        response = super().get(request, *args, **kwargs)
+        response["Vary"] = "Cookie"
+        cache.set(cache_key, response.content, timeout=settings.PROFILE_CACHE_SECONDS)
+        return response
+
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         profile_data = self.request.session.get("profile_data", {})
@@ -162,6 +178,24 @@ class UserPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
 
     def form_valid(self, form):
         messages.success(self.request, "Parola a fost schimbată.")
+        return super().form_valid(form)
+
+
+class ProfileUpdateView(LoginRequiredMixin, FormView):
+    template_name = "accounts/profile_update.html"
+    form_class = ProfileUpdateForm
+    success_url = reverse_lazy("accounts:profile")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["instance"] = self.request.user
+        return kwargs
+
+    def form_valid(self, form: ProfileUpdateForm) -> HttpResponse:
+        user = form.save()
+        store_profile_in_session(self.request, user)
+        cache.delete(profile_cache_key(user.id))
+        messages.success(self.request, "Datele de profil au fost actualizate.")
         return super().form_valid(form)
 
 

@@ -1,0 +1,21 @@
+{% load static %}
+{% load price_tags %}
+
+{% if recent_products %}
+<section class="related-tutorials">
+    <h2>Vizualizate azi</h2>
+    <div class="catalog-grid">
+        {% for product in recent_products %}
+        <article class="product-card">
+            <h3><a href="{% url 'hardware:product_detail' product.slug %}">{{ product.name }}</a></h3>
+            {% with product.image_path|default:"hardware/img/products/generic.jpeg" as img_path %}
+            <div class="product-thumb">
+                <img src="{% static img_path %}" alt="Imagine pentru {{ product.name }}">
+            </div>
+            {% endwith %}
+            <p class="product-price">{% price_eur product.price %}Pret: {{ product.price }} RON{% endprice_eur %}</p>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}

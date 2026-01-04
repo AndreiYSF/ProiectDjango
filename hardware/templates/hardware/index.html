@@ -1,9 +1,13 @@
 {% extends "hardware/baza.html" %}
 {% load static %}
+{% load daily_product %}
+{% load recent_views %}
 
 {% block title %}Magazin Hardware - Pagina principală{% endblock %}
 
 {% block content %}
+{% product_of_day %}
+{% recent_views %}
 <section class="hero">
     <div class="hero-text">
         <h1>Magazin de hardware (scule &amp; unelte)</h1>

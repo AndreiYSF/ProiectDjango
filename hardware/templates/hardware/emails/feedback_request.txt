@@ -1,0 +1,9 @@
+Salut, {{ user.first_name|default:user.username }}!
+
+Ai cumpărat produsul "{{ product.name }}".
+Te rugăm să ne oferi un rating (1-5) accesând unul dintre linkurile de mai jos:
+{% for item in rating_links %}
+- {{ item.rating }}: {{ item.url }}
+{% endfor %}
+
+Mulțumim!

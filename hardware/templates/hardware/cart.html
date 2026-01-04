@@ -81,7 +81,10 @@
     <div class="cart-actions">
         <a class="btn-secondary" href="{% url 'hardware:catalog' %}">Continuă cumpărăturile</a>
         <a class="btn-secondary" href="{% url 'hardware:cart_local' %}">Coș local (localStorage)</a>
-        <button class="btn-primary" type="button" disabled>Finalizează (în curând)</button>
+        <form method="post" action="{% url 'hardware:cart_checkout' %}">
+            {% csrf_token %}
+            <button class="btn-primary" type="submit">Finalizează comanda</button>
+        </form>
     </div>
 </section>
 {% else %}
