@@ -10,6 +10,32 @@ from django.utils import timezone
 _REQUEST_COUNT = 0
 
 
+class _CallableUrl(str):
+    def __call__(self) -> str:
+        return str(self)
+
+
+class _CallableDate(datetime):
+    def __new__(cls, value: datetime):
+        return datetime.__new__(
+            cls,
+            value.year,
+            value.month,
+            value.day,
+            value.hour,
+            value.minute,
+            value.second,
+            value.microsecond,
+            value.tzinfo,
+            getattr(value, "fold", 0),
+        )
+
+    def __call__(self, format_str: str | None = None):
+        if format_str:
+            return self.strftime(format_str)
+        return self
+
+
 def increment_request_count() -> None:
     global _REQUEST_COUNT
     _REQUEST_COUNT += 1
@@ -60,15 +86,18 @@ class Accesare:
         params = parse_qsl(self.querystring, keep_blank_values=True)
         return [(nume, valoare or None) for nume, valoare in params]
 
-    def url(self) -> str:
+    def _build_url(self) -> str:
         if self.querystring:
             return f"{self.path}?{self.querystring}"
         return self.path
 
-    def data(self, format_str: str | None = None):
-        if format_str:
-            return self.created_at.strftime(format_str)
-        return self.created_at
+    @property
+    def url(self) -> str:
+        return _CallableUrl(self._build_url())
+
+    @property
+    def data(self) -> datetime:
+        return _CallableDate(self.created_at)
 
     def pagina(self) -> str:
         return self.path or "/"

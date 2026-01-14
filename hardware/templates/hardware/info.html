@@ -5,11 +5,14 @@
 {% block content %}
 <section class="page-heading">
     <h1>{{ heading }}</h1>
-    <p>Momentul curent: <strong>{{ moment }}</strong></p>
     {% if mesaj_param %}
     <p class="info-message">{{ mesaj_param }}</p>
     {% endif %}
 </section>
+
+{% if data_section %}
+{{ data_section }}
+{% endif %}
 
 <section>
     <h2>Date despre solicitare</h2>

@@ -20,6 +20,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import FormView
@@ -116,20 +117,33 @@ ROMANIAN_MONTHS = [
 ]
 
 
-def afis_data(mode: str | None = None, moment=None) -> str:
+def afis_data(mode: str | None = None, moment=None, as_section: bool = True) -> str:
     """
-    Returnează data și/sau ora într-un format prietenos în limba română.
-    mode poate fi None, 'zi' sau 'timp'.
+    Returnează HTML pentru secțiunea "Data și ora" sau text simplu.
+    mode poate fi None, "zi" sau "timp".
     """
     moment = moment or timezone.localtime()
-    zi = f"{ROMANIAN_DAYS[moment.weekday()]}, {moment.day} {ROMANIAN_MONTHS[moment.month - 1]} {moment.year}"
+    zi = (
+        f"{ROMANIAN_DAYS[moment.weekday()]}, {moment.day} "
+        f"{ROMANIAN_MONTHS[moment.month - 1].capitalize()} {moment.year}."
+    )
     ora = moment.strftime("%H:%M:%S")
 
+    if not as_section:
+        if mode == "zi":
+            return zi
+        if mode == "timp":
+            return ora
+        return f"{zi} {ora}"
+
     if mode == "zi":
-        return zi
-    if mode == "timp":
-        return ora
-    return f"{zi} {ora}"
+        continut = f"<p>{zi}</p>"
+    elif mode == "timp":
+        continut = f"<p>{ora}</p>"
+    else:
+        continut = f"<p>{zi}</p><p>{ora}</p>"
+
+    return f'<section class="data-time"><h2>Data și ora</h2>{continut}</section>'
 
 
 class HomeView(TemplateView):
@@ -1086,7 +1100,7 @@ def log_view(request: HttpRequest) -> HttpResponse:
         elif accesari_param == "detalii":
             for moment in queryset.values_list("created_at", flat=True):
                 accesari_detalii.append(
-                    afis_data(moment=timezone.localtime(moment))
+                    afis_data(moment=timezone.localtime(moment), as_section=False)
                 )
         else:
             errors.append("Parametrul accesari poate avea valorile „nr” sau „detalii”.")
@@ -1188,12 +1202,16 @@ def info(request: HttpRequest) -> HttpResponse:
             titlu="Eroare acces info",
             mesaj_personalizat="Nu ai voie să accesezi pagina info.",
         )
-    data_param = request.GET.get("data")
-    if data_param not in (None, "zi", "timp", ""):
-        data_param = None
+    data_param_present = "data" in request.GET
+    data_param = request.GET.get("data") if data_param_present else None
+    if data_param_present and data_param not in ("", "zi", "timp"):
         mesaj_param = "Parametrul data poate avea valorile „zi”, „timp” sau să fie omis."
+        data_section = ""
     else:
         mesaj_param = ""
+        data_section = (
+            mark_safe(afis_data(data_param or None)) if data_param_present else ""
+        )
 
     parametri = []
     for cheie, valori in request.GET.lists():
@@ -1205,7 +1223,7 @@ def info(request: HttpRequest) -> HttpResponse:
         "titlu": "Informații despre server",
         "heading": "Informații despre server",
         "mesaj_param": mesaj_param,
-        "moment": afis_data(data_param or None),
+        "data_section": data_section,
         "parametri": parametri,
         "server_info": [
             ("Adresă IP client", request.META.get("REMOTE_ADDR", "necunoscut")),
