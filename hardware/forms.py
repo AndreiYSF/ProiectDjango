@@ -55,6 +55,16 @@ def validate_word_lengths(text: str, max_length: int = 15) -> None:
             )
 
 
+def validate_no_links_in_text(value: str) -> None:
+    if re.search(r"\bhttps?://", value, re.IGNORECASE):
+        raise forms.ValidationError("Textul nu poate conține linkuri.")
+
+
+def validate_single_spacing(value: str) -> None:
+    if "  " in value:
+        raise forms.ValidationError("Folosește un singur spațiu între cuvinte.")
+
+
 def parse_cnp(value: str, birth_date: date | None = None) -> date:
     if not value:
         return None
@@ -88,6 +98,7 @@ class ProductFilterForm(forms.Form):
     name = forms.CharField(label="Nume produs", required=False)
     slug = forms.CharField(label="Slug", required=False)
     description = forms.CharField(label="Descriere conține", required=False)
+    image_path = forms.CharField(label="Cale imagine", required=False)
     category = forms.ModelChoiceField(
         label="Categorie",
         queryset=Category.objects.none(),
@@ -431,6 +442,17 @@ class ContactForm(forms.Form):
 
 
 class ProductCreateForm(forms.ModelForm):
+    name = forms.CharField(
+        label="Nume produs",
+        max_length=150,
+        validators=[validate_single_spacing, validate_no_links_in_text],
+    )
+    description = forms.CharField(
+        label="Descriere",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 4}),
+        validators=[validate_no_links_in_text],
+    )
     base_price = forms.DecimalField(
         label="Preț de bază",
         min_value=Decimal("0.01"),

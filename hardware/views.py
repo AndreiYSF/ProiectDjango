@@ -35,7 +35,6 @@ from .forms import (
 from .models import (
     Brand,
     Category,
-    ContactMessage,
     Product,
     ProductView,
     Promotion,
@@ -229,6 +228,7 @@ class ProductsListView(ListView):
             "brand",
             "condition",
             "materials",
+            "image_path",
         ]
         super().setup(request, *args, **kwargs)
 
@@ -278,6 +278,8 @@ class ProductsListView(ListView):
                 queryset = queryset.filter(slug__icontains=data["slug"])
             if data.get("description"):
                 queryset = queryset.filter(description__icontains=data["description"])
+            if data.get("image_path"):
+                queryset = queryset.filter(image_path__icontains=data["image_path"])
             if data.get("category"):
                 queryset = queryset.filter(category=data["category"])
             if data.get("brand"):
@@ -909,12 +911,6 @@ class ContactView(FormView):
         full_name = f"{first_name} {last_name}".strip() if first_name else last_name
         message_text = data["message"]
 
-        ContactMessage.objects.create(
-            name=full_name,
-            email=data["email"],
-            message=message_text,
-        )
-
         message_label = dict(ContactForm.MESSAGE_CHOICES).get(
             data["message_type"], "Mesaj"
         )
@@ -934,7 +930,7 @@ class ContactView(FormView):
         body_lines.append(message_text)
         send_mail(subject, "\n".join(body_lines), sender, [recipient])
 
-        messages_dir = Path(__file__).resolve().parent / "mesaje"
+        messages_dir = Path(__file__).resolve().parent / "Mesaje"
         messages_dir.mkdir(parents=True, exist_ok=True)
         timestamp = int(timezone.now().timestamp())
         suffix = "_urgent" if data.get("urgent") else ""

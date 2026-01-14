@@ -5,7 +5,6 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from hardware import views
-from hardware.models import ContactMessage
 
 
 class ContactViewTests(TestCase):
@@ -14,7 +13,7 @@ class ContactViewTests(TestCase):
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_contact_post_salveaza_message_si_afiseaza_confirmare(self):
         url = reverse("hardware:contact")
-        messages_dir = Path(views.__file__).resolve().parent / "mesaje"
+        messages_dir = Path(views.__file__).resolve().parent / "Mesaje"
         existing = set(messages_dir.glob("mesaj_*.json"))
 
         payload = {
@@ -33,10 +32,6 @@ class ContactViewTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, url)
-
-        self.assertTrue(
-            ContactMessage.objects.filter(email=payload["email"]).exists()
-        )
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("Popescu", mail.outbox[0].body)
