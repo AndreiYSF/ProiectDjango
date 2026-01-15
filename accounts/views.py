@@ -161,6 +161,7 @@ class ProfileView(LoginRequiredMixin, TemplateView):
             response["Vary"] = "Cookie"
             return response
         response = super().get(request, *args, **kwargs)
+        response.render()
         response["Vary"] = "Cookie"
         cache.set(cache_key, response.content, timeout=settings.PROFILE_CACHE_SECONDS)
         return response
