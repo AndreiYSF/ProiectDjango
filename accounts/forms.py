@@ -132,7 +132,7 @@ class LoginForm(AuthenticationForm):
                 "Contul tau a fost blocat. Contacteaza un administrator.",
                 code="cont_blocat",
             )
-        if not getattr(user, "email_confirmat", False):
+        if not user.is_superuser and not getattr(user, "email_confirmat", False):
             raise forms.ValidationError(
                 "Trebuie să confirmi e-mailul înainte de autentificare.",
                 code="email_neconfirmat",
