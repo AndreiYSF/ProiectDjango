@@ -87,7 +87,10 @@ def custom_403(request: HttpRequest, exception=None) -> HttpResponse:
 
 
 def _is_site_admin(user) -> bool:
-    return user.is_authenticated and user.groups.filter(name="Administratori_site").exists()
+    return user.is_authenticated and (
+        user.is_superuser
+        or user.groups.filter(name="Administratori_site").exists()
+    )
 
 
 ROMANIAN_DAYS = [

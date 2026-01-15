@@ -16,19 +16,35 @@ class _CallableUrl(str):
 
 
 class _CallableDate(datetime):
-    def __new__(cls, value: datetime):
-        return datetime.__new__(
-            cls,
-            value.year,
-            value.month,
-            value.day,
-            value.hour,
-            value.minute,
-            value.second,
-            value.microsecond,
-            value.tzinfo,
-            getattr(value, "fold", 0),
-        )
+    def __new__(cls, *args, **kwargs):
+        if len(args) == 1 and isinstance(args[0], datetime) and not kwargs:
+            value = args[0]
+            try:
+                return datetime.__new__(
+                    cls,
+                    value.year,
+                    value.month,
+                    value.day,
+                    value.hour,
+                    value.minute,
+                    value.second,
+                    value.microsecond,
+                    value.tzinfo,
+                    fold=getattr(value, "fold", 0),
+                )
+            except TypeError:
+                return datetime.__new__(
+                    cls,
+                    value.year,
+                    value.month,
+                    value.day,
+                    value.hour,
+                    value.minute,
+                    value.second,
+                    value.microsecond,
+                    value.tzinfo,
+                )
+        return datetime.__new__(cls, *args, **kwargs)
 
     def __call__(self, format_str: str | None = None):
         if format_str:
